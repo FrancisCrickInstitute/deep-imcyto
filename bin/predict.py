@@ -107,7 +107,7 @@ def main(CONFIG):
 
     for results_dir in all_results_dirs:
         if (os.path.exists(results_dir) != True):
-            os.makedirs(results_dir)
+            os.makedirs(results_dir, exist_ok = True)
 
 
     ##################

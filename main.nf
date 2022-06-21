@@ -9,52 +9,13 @@
 ----------------------------------------------------------------------------------------
 */
 
-nextflow.enable.dsl=1
+nextflow.enable.dsl=2
 
-def helpMessage() {
-    log.info nfcoreHeader()
-    log.info"""
+include { helpMessage;
+           } from './lib/core_functions.nf'
 
-    Usage:
-
-    The typical command for running the pipeline is as follows:
-      nextflow run nf-core/imcyto \
-          --input "./inputs/*.mcd" \
-          --metadata './inputs/metadata.csv' \
-          --full_stack_cppipe './plugins/full_stack_preprocessing.cppipe' \
-          --ilastik_stack_cppipe './plugins/ilastik_stack_preprocessing.cppipe' \
-          --segmentation_cppipe './plugins/segmentation.cppipe' \
-          --ilastik_training_ilp './plugins/ilastik_training_params.ilp' \
-          --plugins './plugins/cp_plugins/' \
-          -profile docker
-
-    Mandatory arguments:
-      --input [file]                  Path to input data file(s) (globs must be surrounded with quotes). Currently supported formats are *.mcd, *.ome.tiff, *.txt
-      --metadata [file]               Path to metadata csv file indicating which images to merge in full stack and/or Ilastik stack
-      --full_stack_cppipe [file]      CellProfiler pipeline file required to create full stack (cppipe format)
-      --ilastik_stack_cppipe [file]   CellProfiler pipeline file required to create Ilastik stack (cppipe format)
-      --segmentation_cppipe [file]    CellProfiler pipeline file required for segmentation (cppipe format)
-      -profile [str]                  Configuration profile to use. Can use multiple (comma separated)
-                                      Available: docker, singularity, awsbatch, test and more.
-
-    Other options:
-      --ilastik_training_ilp [file]   Parameter file required by Ilastik (ilp format)
-      --compensation_tiff [file]      Tiff file for compensation analysis during CellProfiler preprocessing steps
-      --skip_ilastik [bool]           Skip Ilastik processing step
-      --plugins [file]                Path to directory with plugin files required for CellProfiler. Default: assets/plugins
-      --outdir [file]                 The output directory where the results will be saved
-      --publish_dir_mode [str]        Mode for publishing results in the output directory. Available: symlink, rellink, link, copy, copyNoFollow, move (Default: copy)
-      --email [email]                 Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
-      --email_on_fail [email]         Same as --email, except only send mail if the workflow is not successful
-      -name [str]                     Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
-
-    AWSBatch options:
-      --awsqueue [str]                The AWSBatch JobQueue that needs to be set when running on AWSBatch
-      --awsregion [str]               The AWS Region for your AWS Batch job to run on
-      --awscli [str]                  Path to the AWS CLI tool
-    """.stripIndent()
-}
-
+include { NUCLEAR_PREPROCESS;
+          NUCLEAR_SEGMENTATION } from './modules/nuclear_segmentation.nf'
 
 
 println params.nuclear_ppdir
@@ -64,9 +25,28 @@ println params.nuclear_weights_directory
 params.segmentation_type = "dilation" //"dilation" or "cellprofiler"
 params.nuclear_weights_directory = './weights'
 
-ch_nuclear_ppdir = Channel.value(params.nuclear_ppdir)
-ch_nuclear_segdir = Channel.value(params.nuclear_segdir)
-ch_nuclear_weights = Channel.value(params.nuclear_weights_directory)
+
+params.imctoolsdir = '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/results/imctools'
+
+workflow Primary {
+  
+    ch_nuclear_ppdir = Channel.value(params.nuclear_ppdir)
+    ch_nuclear_segdir = Channel.value(params.nuclear_segdir)
+    ch_nuclear_weights = Channel.value(params.nuclear_weights_directory)
+    ch_imctoolsdir = Channel.value(params.imctools_dir)
+    
+    NUCLEAR_PREPROCESS(ch_imctoolsdir, ch_nuclear_ppdir)
+    // ch_nhood | NEIGHBOURHOOD_GRAPH() | GRAPH_BARRIER() 
+  
+}
+
+// ch_nuclear_ppdir = Channel.value(params.nuclear_ppdir)
+// ch_nuclear_segdir = Channel.value(params.nuclear_segdir)
+// ch_nuclear_weights = Channel.value(params.nuclear_weights_directory)
+// ch_imctoolsdir = Channel.value(params.imctools_dir)
+
+// NUCLEAR_PREPROCESS(ch_imctoolsdir, ch_nuclear_ppdir)
+
 
 // Show help message
 if (params.help) {
@@ -176,40 +156,6 @@ log.info "-\033[2m--------------------------------------------------\033[0m-"
 // Check the hostnames against configured profiles
 checkHostname()
 
-/*
- * STEP 1: imctools
- */
-process IMCTOOLS {
-
-    tag "$name"
-    label 'process_medium'
-    publishDir "${params.outdir}/imctools/${name}", mode: params.publish_dir_mode,
-        saveAs: { filename ->
-                      if (filename.indexOf("version.txt") > 0) null
-                      else filename
-                }
-
-    input:
-    tuple val(name), path(mcd) from ch_mcd
-    path metadata from ch_metadata
-
-    output:
-    tuple val(name), path("*/full_stack/*") into ch_full_stack_tiff
-    tuple val(name), path("*/ilastik_stack/*") into ch_ilastik_stack_tiff
-    tuple val(name), path("*/full_stack/191Ir_DNA1.tiff") into ch_dna1
-    tuple val(name), path("*/full_stack/193Ir_DNA2.tiff") into ch_dna2
-    tuple val(name), path("*/full_stack/100Ru_ruthenium.tiff") into ch_Ru
-    path "*/*ome.tiff"
-    path "*.csv"
-    path "*version.txt" into ch_imctools_version
-    val "${params.outdir}/imctools" into ch_imctoolsdir
-
-    script: // This script is bundled with the pipeline, in nf-core/imcyto/bin/
-    """
-    run_imctools.py $mcd $metadata
-    pip show imctools | grep "Version" > imctools_version.txt
-    """
-}
 
 
 // Function to get list of [sample_id,roi_id,path_to_file]
@@ -276,365 +222,18 @@ ch_full_stack_tiff.into { ch_full_stack_tiff; ch_full_stack_phe }
 
 
 
-process PSEUDO_HE{
-    /*
-    * Make a pseudo-he image for each mcd file.
-    */
-    tag "${name}.${roi}"
 
-    // executor "slurm"
-	// time "5m"
-	// clusterOptions "--part=gpu --gres=gpu:1"
 
-    module params.md_conda
-    conda params.dl_conda_env
 
-    publishDir "${params.outdir}/pseudo_HandE", mode: params.publish_dir_mode
 
-    input:
-    tuple val(name), val(roi), path(dna1) from ch_dna1
-    tuple val(name), val(roi), path(dna2) from ch_dna2
-    tuple val(name), val(roi), path(ruth) from ch_Ru
 
-    output:
-    path "*.png" into ch_pseudos
-    
 
-    script:
 
-    """
-    makeHE.py -dna1 $dna1 -dna2 $dna2 -ruth $ruth --outdir ./ --imagename '$name-$roi'
-    """
 
-}
 
 
 
-/*
- * Nuclear image preprocessing.
- */
 
-process NUCLEAR_PREPROCESS {
-
-    executor "slurm"
-	time "1h"
-	clusterOptions "--part=gpu --gres=gpu:1"
-
-    module params.md_conda
-    conda params.dl_conda_env
-
-    publishDir "${params.nuclear_ppdir}", mode: params.publish_dir_mode, overwrite: true
-
-    input:
-    val indir from ch_imctoolsdir
-    val preprocessdir from ch_nuclear_ppdir
-
-    output:
-    val preprocessdir into ch_preprocess_results
-    
-
-    """
-    unet_preprocess.py $indir $preprocessdir
-    """
-
-}
-
-/*
- * Deep learning segmentation.
- */
-
-// process NUCLEAR_SEGMENTATION {
-
-//     executor "slurm"
-// 	time "1h"
-// 	clusterOptions "--part=gpu --gres=gpu:1"
-
-//     module params.md_conda
-//     conda params.dl_conda_env
-
-//     publishDir "${params.nuclear_segdir}", mode: params.publish_dir_mode, overwrite: true
- 
-//     input:
-//     val preprocessdir from ch_preprocess_results
-//     val segdir from ch_nuclear_segdir
-//     val weights from ch_nuclear_weights
-
-//     output:
-//     val segdir into ch_nuc_seg_results
-//     val true into ch_proceed_cell_segmentation
-//     val true into ch_proceed_dilation
- 
-//     """
-//     predict.py $preprocessdir $segdir p1 all $weights
-//     """
-// }
- 
-process NUCLEAR_SEGMENTATION {
-
-    executor "slurm"
-	time "1h"
-	clusterOptions "--part=gpu --gres=gpu:1"
-
-    module params.md_conda
-    conda params.dl_conda_env
-
-    publishDir "${params.nuclear_segdir}", mode: params.publish_dir_mode, overwrite: true
- 
-    input:
-    val preprocessdir from ch_preprocess_results
-    val segdir from ch_nuclear_segdir
-    val weights from ch_nuclear_weights
-
-    output:
-    val segdir into ch_nuc_seg_results
-    val true into ch_proceed_cell_segmentation
-    val true into ch_proceed_dilation
-    path "*/postprocess_predictions/*.tiff" into ch_nuclear_predictions
- 
-    """
-    predict.py $preprocessdir ./ p1 all $weights
-    """
-}
-
-
-/*
- * STEP 2: Preprocess full stack images with CellProfiler
- */
-process PREPROCESS_FULL_STACK {
-    tag "${name}.${roi}"
-    label 'process_medium'
-    publishDir "${params.outdir}/preprocess/${name}/${roi}", mode: params.publish_dir_mode,
-        saveAs: { filename ->
-                      if (filename.indexOf("version.txt") > 0) null
-                      else filename
-                }
-
-    input:
-    tuple val(name), val(roi), path(tiff) from ch_full_stack_tiff
-    path ctiff from ch_compensation_full_stack.collect().ifEmpty([])
-    path cppipe from ch_full_stack_cppipe
-    path plugin_dir from ch_preprocess_full_stack_plugin.collect()
-
-    output:
-    tuple val(name), val(roi), path("full_stack/*") into ch_preprocess_full_stack_tiff
-    path "*version.txt" into ch_cellprofiler_version
-
-    script:
-    """
-    export _JAVA_OPTIONS="-Xms${task.memory.toGiga()/2}g -Xmx${task.memory.toGiga()}g"
-    cellprofiler \\
-        --run-headless \\
-        --pipeline $cppipe \\
-        --image-directory ./ \\
-        --plugins-directory ./${plugin_dir} \\
-        --output-directory ./full_stack \\
-        --log-level DEBUG \\
-        --temporary-directory ./tmp
-
-    cellprofiler --version > cellprofiler_version.txt
-    """
-}
-
-
-/*
- * STEP 3: Preprocess Ilastik stack images with CellProfiler
- */
-process PREPROCESS_ILASTIK_STACK {
-    tag "${name}.${roi}"
-    label 'process_medium'
-    publishDir "${params.outdir}/preprocess/${name}/${roi}", mode: params.publish_dir_mode
-
-    input:
-    tuple val(name), val(roi), path(tiff) from ch_ilastik_stack_tiff
-    path ctiff from ch_compensation_ilastik_stack.collect().ifEmpty([])
-    path cppipe from ch_ilastik_stack_cppipe
-    path plugin_dir from ch_preprocess_ilastik_stack_plugin.collect()
-
-    output:
-    tuple val(name), val(roi), path("ilastik_stack/*") into ch_preprocess_ilastik_stack_tiff
-
-    script:
-    """
-    export _JAVA_OPTIONS="-Xms${task.memory.toGiga()/2}g -Xmx${task.memory.toGiga()}g"
-    cellprofiler \\
-        --run-headless \\
-        --pipeline $cppipe \\
-        --image-directory ./ \\
-        --plugins-directory ./${plugin_dir} \\
-        --output-directory ./ilastik_stack \\
-        --log-level DEBUG \\
-        --temporary-directory ./tmp
-    """
-}
-
-
-/*
- * STEP 4: Ilastik
- */
-if (params.skip_ilastik) {
-    ch_preprocess_full_stack_tiff
-        .join(ch_preprocess_ilastik_stack_tiff, by: [0,1])
-        .map { it -> [ it[0], it[1], [ it[2], it[3] ].flatten().sort()] }
-        .map { it -> it + [file("${params.nuclear_segdir}/p1/postprocess_predictions/${it[0]}-${it[1]}_nuclear_mask.tiff")] }
-        .set { ch_preprocess_full_stack_tiff }
-    ch_ilastik_version = Channel.empty()
-} else {
-    process ILASTIK {
-        tag "${name}.${roi}"
-        label 'process_medium'
-        publishDir "${params.outdir}/ilastik/${name}/${roi}", mode: params.publish_dir_mode,
-            saveAs: { filename ->
-                          if (filename.indexOf("version.txt") > 0) null
-                          else filename
-                    }
-
-        input:
-        tuple val(name), val(roi), path(tiff) from ch_preprocess_ilastik_stack_tiff
-        path ilastik_training_ilp from ch_ilastik_training_ilp
-
-        output:
-        tuple val(name), val(roi), path("*.tiff") into ch_ilastik_tiff
-        path "*version.txt" into ch_ilastik_version
-
-        script:
-        """
-        cp $ilastik_training_ilp ilastik_params.ilp
-
-        /ilastik-release/run_ilastik.sh \\
-            --headless \\
-            --project=ilastik_params.ilp \\
-            --output_format="tiff sequence" \\
-            --output_filename_format=./{nickname}_{result_type}_{slice_index}.tiff \\
-            --logfile ./ilastik_log.txt \\
-            $tiff
-        rm  ilastik_params.ilp
-
-        /ilastik-release/bin/python -c "import ilastik; print(ilastik.__version__)" > ilastik_version.txt
-        """
-    }
-
-    ch_preprocess_full_stack_tiff
-        .join(ch_ilastik_tiff, by: [0,1])
-        .map { it -> [ it[0], it[1], [ it[2], it[3] ].flatten().sort() ]}
-        .map { it -> it + [file("${params.nuclear_segdir}/p1/postprocess_predictions/${it[0]}-${it[1]}_nuclear_mask.tiff")] }
-        .set { ch_preprocess_full_stack_tiff }
-}
-
-ch_preprocess_full_stack_tiff.into{ ch_preprocess_full_stack_tiff_CP; ch_preprocess_full_stack_tiff_dilation}
-
-/*
- * STEP 5: Segmentation with CellProfiler
- */
-
-process CELL_SEGMENTATION {
-    tag "${name}.${roi}"
-    label 'process_high'
-    publishDir "${params.outdir}/segmentation/${name}/${roi}", mode: params.publish_dir_mode
-
-    input:
-    val flag from ch_proceed_cell_segmentation
-    tuple val(name), val(roi), path(tiff), path(mask) from ch_preprocess_full_stack_tiff_CP
-    path cppipe from ch_segmentation_cppipe
-    path plugin_dir from ch_segmentation_plugin.collect()
-
-    output:
-    path "*.{csv,tiff}"
-
-    when:
-    params.segmentation_type == 'cellprofiler'
-
-    script:
-    """
-    echo tiff_files: ${tiff}
-    echo mask_files: ${mask}
-    export _JAVA_OPTIONS="-Xms${task.memory.toGiga()/2}g -Xmx${task.memory.toGiga()}g"
-    cellprofiler \\
-        --run-headless \\
-        --pipeline $cppipe \\
-        --image-directory ./ \\
-        --plugins-directory ./${plugin_dir} \\
-        --output-directory ./ \\
-        --log-level DEBUG \\
-        --temporary-directory ./tmp
-    """
-}
-
-process NUCLEAR_DILATION {
-
-    tag "${name}.${roi}"
-    // label 'process_low'
-
-    executor "slurm"
-	time "1h"
-	clusterOptions "--part=gpu --gres=gpu:1"
-
-    publishDir "${params.outdir}/nuclear_dilation/${name}/${roi}", mode: params.publish_dir_mode
-
-    module params.md_conda
-    conda params.dl_conda_env
-
-    input:
-    val flag from ch_proceed_dilation
-    tuple val(name), val(roi), path(tiff), path(mask) from ch_preprocess_full_stack_tiff_dilation
-
-    output:
-    path "*dilation.tiff" into ch_nuclear_dilation
-
-    when:
-    params.segmentation_type == 'dilation'
-
-    script:
-    """
-    echo tiff_files: ${tiff}
-    echo mask_files: ${mask}
-    nuclear_dilation.py --input_mask ${mask} --output_directory ./ --radius ${params.nuclear_dilation_radius} 
-    """
-}
-
-/*
- * STEP 6: Output Description HTML
- */
-// process output_documentation {
-//     publishDir "${params.outdir}/pipeline_info", mode: params.publish_dir_mode
-
-//     input:
-//     path output_docs from ch_output_docs
-//     path images from ch_output_docs_images
-
-//     output:
-//     path "results_description.html"
-
-//     script:
-//     """
-//     markdown_to_html.r $output_docs results_description.html
-//     """
-// }
-
-/*
- * Parse software version numbers
- */
-process get_software_versions {
-    publishDir "${params.outdir}/pipeline_info", mode: params.publish_dir_mode,
-        saveAs: { filename ->
-                      if (filename.indexOf(".csv") > 0) filename
-                      else null
-                }
-
-    input:
-    path imctools from ch_imctools_version.first()
-    path cellprofiler from ch_cellprofiler_version.first()
-    path ilastik from ch_ilastik_version.first().ifEmpty([])
-
-    output:
-    path "software_versions.csv"
-
-    script:
-    """
-    echo $workflow.manifest.version > pipeline_version.txt
-    echo $workflow.nextflow.version > nextflow_version.txt
-    scrape_software_versions.py &> software_versions_mqc.yaml
-    """
-}
 
 /*
  * Completion e-mail notification
@@ -742,46 +341,4 @@ workflow.onComplete {
 
 }
 
-def nfcoreHeader() {
-    // Log colors ANSI codes
-    c_black = params.monochrome_logs ? '' : "\033[0;30m";
-    c_blue = params.monochrome_logs ? '' : "\033[0;34m";
-    c_cyan = params.monochrome_logs ? '' : "\033[0;36m";
-    c_dim = params.monochrome_logs ? '' : "\033[2m";
-    c_green = params.monochrome_logs ? '' : "\033[0;32m";
-    c_purple = params.monochrome_logs ? '' : "\033[0;35m";
-    c_reset = params.monochrome_logs ? '' : "\033[0m";
-    c_white = params.monochrome_logs ? '' : "\033[0;37m";
-    c_yellow = params.monochrome_logs ? '' : "\033[0;33m";
 
-    return """    -${c_dim}--------------------------------------------------${c_reset}-
-                                            ${c_green},--.${c_black}/${c_green},-.${c_reset}
-    ${c_blue}        ___     __   __   __   ___     ${c_green}/,-._.--~\'${c_reset}
-    ${c_blue}  |\\ | |__  __ /  ` /  \\ |__) |__         ${c_yellow}}  {${c_reset}
-    ${c_blue}  | \\| |       \\__, \\__/ |  \\ |___     ${c_green}\\`-._,-`-,${c_reset}
-                                            ${c_green}`._,._,\'${c_reset}
-    ${c_purple}  nf-core/imcyto v${workflow.manifest.version}${c_reset}
-    -${c_dim}--------------------------------------------------${c_reset}-
-    """.stripIndent()
-}
-
-def checkHostname() {
-    def c_reset = params.monochrome_logs ? '' : "\033[0m"
-    def c_white = params.monochrome_logs ? '' : "\033[0;37m"
-    def c_red = params.monochrome_logs ? '' : "\033[1;91m"
-    def c_yellow_bold = params.monochrome_logs ? '' : "\033[1;93m"
-    if (params.hostnames) {
-        def hostname = "hostname".execute().text.trim()
-        params.hostnames.each { prof, hnames ->
-            hnames.each { hname ->
-                if (hostname.contains(hname) && !workflow.profile.contains(prof)) {
-                    log.error "====================================================\n" +
-                            "  ${c_red}WARNING!${c_reset} You are running with `-profile $workflow.profile`\n" +
-                            "  but your machine hostname is ${c_white}'$hostname'${c_reset}\n" +
-                            "  ${c_yellow_bold}It's highly recommended that you use `-profile $prof${c_reset}`\n" +
-                            "============================================================"
-                }
-            }
-        }
-    }
-}
