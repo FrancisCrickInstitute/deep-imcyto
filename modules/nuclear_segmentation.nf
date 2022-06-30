@@ -48,12 +48,14 @@ process NUCLEAR_SEGMENTATION {
     input:
     val preprocessdir //from ch_preprocess_results
     val weights //from ch_nuclear_weights
+    // to do : add panel as input
 
     output:
     val "${params.outdir}/nuclear_segmentation", emit: ch_nuc_seg_results
     val true, emit: ch_proceed_cell_segmentation
     val true, emit: ch_proceed_dilation
     path "*/postprocess_predictions/*.tiff", emit: ch_nuclear_predictions
+    // path "./*/raw/*/*.tiff", emit: ch_raw_predictions
  
     """
     predict.py $preprocessdir . p1 all $weights

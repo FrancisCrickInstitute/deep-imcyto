@@ -4,7 +4,7 @@
 process PREPROCESS_FULL_STACK {
     tag "${name}.${roi}"
     label 'process_medium'
-    publishDir "${params.outdir}/preprocess/${name}/${roi}", mode: params.publish_dir_mode,
+    publishDir "${params.outdir}/channel_preprocess/${name}/${roi}", mode: params.publish_dir_mode,
         saveAs: { filename ->
                       if (filename.indexOf("version.txt") > 0) null
                       else filename
@@ -37,36 +37,36 @@ process PREPROCESS_FULL_STACK {
 }
 
 
-// /*
-//  * STEP 3: Preprocess Ilastik stack images with CellProfiler
-//  */
-// process PREPROCESS_ILASTIK_STACK {
-//     tag "${name}.${roi}"
-//     label 'process_medium'
-//     publishDir "${params.outdir}/preprocess/${name}/${roi}", mode: params.publish_dir_mode
+/*
+ * STEP 3: Preprocess Ilastik stack images with CellProfiler
+ */
+process PREPROCESS_ILASTIK_STACK {
+    tag "${name}.${roi}"
+    label 'process_medium'
+    publishDir "${params.outdir}/channel_preprocess/${name}/${roi}", mode: params.publish_dir_mode
 
-//     input:
-//     tuple val(name), val(roi), path(tiff) from ch_ilastik_stack_tiff
-//     path ctiff from ch_compensation_ilastik_stack.collect().ifEmpty([])
-//     path cppipe from ch_ilastik_stack_cppipe
-//     path plugin_dir from ch_preprocess_ilastik_stack_plugin.collect()
+    input:
+    tuple val(name), val(roi), path(tiff) from ch_ilastik_stack_tiff
+    path ctiff from ch_compensation_ilastik_stack.collect().ifEmpty([])
+    path cppipe from ch_ilastik_stack_cppipe
+    path plugin_dir from ch_preprocess_ilastik_stack_plugin.collect()
 
-//     output:
-//     tuple val(name), val(roi), path("ilastik_stack/*"), emit: ch_preprocess_ilastik_stack_tiff
+    output:
+    tuple val(name), val(roi), path("ilastik_stack/*"), emit: ch_preprocess_ilastik_stack_tiff
 
-//     script:
-//     """
-//     export _JAVA_OPTIONS="-Xms${task.memory.toGiga()/2}g -Xmx${task.memory.toGiga()}g"
-//     cellprofiler \\
-//         --run-headless \\
-//         --pipeline $cppipe \\
-//         --image-directory ./ \\
-//         --plugins-directory ./${plugin_dir} \\
-//         --output-directory ./ilastik_stack \\
-//         --log-level DEBUG \\
-//         --temporary-directory ./tmp
-//     """
-// }
+    script:
+    """
+    export _JAVA_OPTIONS="-Xms${task.memory.toGiga()/2}g -Xmx${task.memory.toGiga()}g"
+    cellprofiler \\
+        --run-headless \\
+        --pipeline $cppipe \\
+        --image-directory ./ \\
+        --plugins-directory ./${plugin_dir} \\
+        --output-directory ./ilastik_stack \\
+        --log-level DEBUG \\
+        --temporary-directory ./tmp
+    """
+}
 
 
 // /*

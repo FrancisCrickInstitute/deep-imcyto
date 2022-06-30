@@ -14,12 +14,12 @@ process PSEUDO_HE{
     publishDir "${params.outdir}/pseudo_HandE", mode: params.publish_dir_mode
 
     input:
-    tuple val(name), val(roi), path(dna1) from ch_dna1
-    tuple val(name), val(roi), path(dna2) from ch_dna2
-    tuple val(name), val(roi), path(ruth) from ch_Ru
+    tuple val(name), val(roi), path(dna1)
+    tuple val(name), val(roi), path(dna2)
+    tuple val(name), val(roi), path(ruth)
 
     output:
-    path "*.png" into ch_pseudos
+    path "*.png", emit: ch_pseudos
     
 
     script:

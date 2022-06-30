@@ -19,9 +19,6 @@ process NUCLEAR_DILATION {
     output:
     path "*dilation.tiff", emit: ch_nuclear_dilation
 
-    when:
-    params.segmentation_type == 'dilation'
-
     script:
     """
     echo tiff_files: ${tiff}
