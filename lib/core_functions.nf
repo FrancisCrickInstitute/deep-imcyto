@@ -86,7 +86,7 @@ def checkHostname() {
     }
 }
 
-def parseInputs(){
+def parseInputs(params){
     /*
     * Input
     */
@@ -95,6 +95,9 @@ def parseInputs(){
     custom_runName = params.name
     if (!(workflow.runName ==~ /[a-z]+_[a-z]+/)) {
         custom_runName = workflow.runName
+    }
+    else {
+        custom_runName = ''
     }
 
     // Stage config files
@@ -123,6 +126,9 @@ def parseInputs(){
         if (params.ilastik_training_ilp) {
             ch_ilastik_training_ilp = file(params.ilastik_training_ilp, checkIfExists: true) } else { exit 1, "Ilastik training ilp file not specified!" }
     }
+    else{
+        Channel.empty().set{ch_ilastik_training_il}
+    }
 
     if (params.compensation_tiff) {
         Channel
@@ -138,5 +144,7 @@ def parseInputs(){
     Channel
         .fromPath(params.plugins, type: 'dir' , checkIfExists: true)
         .set { ch_cp_plugins }
+    
+    return custom_runName; ch_output_docs; ch_output_docs_images; ch_mcd; ch_metadata; ch_full_stack_cppipe; ch_ilastik_stack_cppipe; ch_segmentation_cppipe; ch_ilastik_training_ilp; ch_compensation; ch_cp_plugins
 
 }

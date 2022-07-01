@@ -14,8 +14,8 @@ export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rub
 # "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_tonsil*/*.mcd"
 
 ## RUN PIPELINE
-nextflow run ./test.nf\
-    --input '/camp/lab/swantonc/working/collive/rubicon/cell_segmentation/nextflow_runs/P1/20190722_Run3/mcd/*.mcd'\
+nextflow run ./main.nf\
+    --input "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_TMA_REC_20190508/P1_TMA_REC_20190508.mcd"\
     --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results'\
     --metadata './metadata.csv'\
     --full_stack_cppipe './assets/cppipes/full_stack_preprocessing.cppipe'\
@@ -29,9 +29,11 @@ nextflow run ./test.nf\
     --imctools_env "/camp/lab/swantonc/working/Alastair/.conda/envs/tf"\
     --md_cuda "CUDA/10.1.105"\
     --md_conda "Anaconda3"\
-    --nuclear_weights_directory "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/weights"\
+    --imctools_dir "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results/imctools"\
+    --nuclear_weights_directory "./weights"\
     --nuclear_ppdir "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results/nuclear_preprocess"\
     --nuclear_segdir "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results/nuclear_segmentation"\
+    --segmentation_type "dilation"\
     --nuclear_dilation_radius 5\
     -profile crick\
     -resume

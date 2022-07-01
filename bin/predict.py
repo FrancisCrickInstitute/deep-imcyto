@@ -10,12 +10,12 @@ from skimage.morphology import diamond
 from skimage.util import img_as_float32, img_as_uint
 import skimage.io as io
 
-from cupy_instance_closing_crop import instance_closing
+from anomaly_detection import process_anomalies, reprocess_unlikely_labels
 from data_nucleus import *
 from nested_unet import *
-from unet_mask_postprocessing_module import (PBW_rm_small_obj,
-                                             multi_model_watershed)
+from unet_mask_postprocessing_module import (PBW_rm_small_obj, instance_closing)
 
+from pickle import load
 
 ####################
 # ~~~~ CONFIG ~~~~ #
@@ -43,8 +43,10 @@ class configuration(object):
         # POSTPROCESSING WATERSHED THRESHOLDS:
         self.NUCLEUS_CONFIDENCE = 0.5
         self.COMS_CONFIDENCE = 0.5
+        self.COMS_CONFIDENCE_LOW = 0.125 # lower confidence for re-segmenting low likelihood regions
         self.THRESH_NUC = self.NUCLEUS_CONFIDENCE * 255
         self.THRESH_COM = self.COMS_CONFIDENCE * 255
+        self.THRESH_COM_LOW = self.COMS_CONFIDENCE_LOW * 255
         self.MIN_OBJ_SIZE = 4
         self.WATERSHED_LINE = False
         self.COMPACTNESS = 0
@@ -55,6 +57,7 @@ class configuration(object):
         self.EDGE_WEIGHTED_NUC_RESULTS_DIR = '{}/raw/edge_weighted_nuc/'.format(self.ROOT_OUT_DIR)
         self.COM_RESULTS_DIR = '{}/raw/com/'.format(self.ROOT_OUT_DIR)
         self.PBW_WATERSHED_RESULTS_DIR = '{}/raw/pbw_wshed_nc_{}_cc_{}_mos_{}_c_{}/'.format(self.ROOT_OUT_DIR, self.NUCLEUS_CONFIDENCE, self.COMS_CONFIDENCE, self.MIN_OBJ_SIZE, self.COMPACTNESS)
+        self.MSE_RESULTS_DIR = '{}/raw/AE_error/'.format(self.ROOT_OUT_DIR)
         self.PP_OUT_DIR = '{}/postprocess_predictions'.format(self.ROOT_OUT_DIR)
 
         # PREFIX OF WEIGHTS FILE:
@@ -107,7 +110,7 @@ def main(CONFIG):
 
     for results_dir in all_results_dirs:
         if (os.path.exists(results_dir) != True):
-            os.makedirs(results_dir, exist_ok = True)
+            os.makedirs(results_dir)
 
 
     ##################
@@ -194,34 +197,74 @@ def main(CONFIG):
     #############################################
     # PERFORM POSTPROCESSING of WATERSHED IMAGE #
     #############################################
+    '''
+    [1] Perform instance level closing to refine nuclear shapes.
+    [2] Remove anomalous (usually undersegmented) nuclei with deep autoencoder model trained on ground truth nuclear
+        morphology stats.
+    [3] Re-segment anomalous regions with looser centre of mass criterion in order to tackle undersegmentation.
+    '''
+    # Autoencoder params:
+    scaler_path = os.path.join(CONFIG.WEIGHTS_DIR, 'nuclear_morph_scaler.pkl')
+    morph_scaler = load(open(scaler_path, 'rb'))
+    AE_weights = os.path.join(CONFIG.WEIGHTS_DIR, 'AE_weights.hdf5')
 
-    predict_list = glob.glob('{}/{}*.tiff'.format(CONFIG.PBW_WATERSHED_RESULTS_DIR, CONFIG.PREDICTION_SUBSET))
-    predict_list.sort()
+    ## image lists for postprocessing:
+    watershed_list = glob.glob('{}/{}*.tiff'.format(CONFIG.PBW_WATERSHED_RESULTS_DIR, CONFIG.PREDICTION_SUBSET))
+    nuc_list = glob.glob('{}/{}*predict.png'.format(CONFIG.EDGE_WEIGHTED_NUC_RESULTS_DIR, CONFIG.PREDICTION_SUBSET))
+    bound_list = glob.glob('{}/{}*predict.png'.format(CONFIG.BOUNDARY_RESULTS_DIR, CONFIG.PREDICTION_SUBSET))
+    com_list = glob.glob('{}/{}*predict.png'.format(CONFIG.COM_RESULTS_DIR, CONFIG.PREDICTION_SUBSET))
+    
+    # sort:
+    watershed_list.sort()
+    nuc_list.sort()
+    bound_list.sort()
+    com_list.sort()
 
-    for i in range(len(predict_list)):
-        predict_im = io.imread(predict_list[i])
+    # 
+    for i in range(len(watershed_list)):
+        
+        ## read necessary images:
+        watershed_im = io.imread(watershed_list[i])
+        nuc_im = io.imread(nuc_list[i])
+        boundary_im = io.imread(bound_list[i])
+        com_im = io.imread(com_list[i])
+
+        ## construct filename:
+        fname = os.path.split(watershed_list[i])[1]
+        imagename = fname.split('SUM_DNA_')[0]
+        fname = imagename + 'nuclear_mask.tiff'
+
+        # Perform instance closing:
         diamond_selem = diamond(1)
-        closed_im = instance_closing(predict_im, strel = diamond_selem)
-        fname = os.path.split(predict_list[i])[1]
-        fname = fname.split('SUM_DNA_')[0]
-        fname = fname + 'nuclear_mask.tiff'
+        closed_im = instance_closing(watershed_im, strel = diamond_selem)
+
+        # Remove anomalies:
+        mask_refined, error_img, _ = process_anomalies(closed_im, AE_weights, morph_scaler, save_error_image = True, outdir = CONFIG.MSE_RESULTS_DIR, imagename = imagename)
+
+        # if any elements of the error array are greater than the error cutoff (==1), reprocess the regions that have this large error, else use this refinec mask as the final one:
+        if np.any(error_img > 1):
+            mask_final = reprocess_unlikely_labels(mask_refined, error_img, boundary_im, nuc_im, com_im, CONFIG.THRESH_COM_LOW, CONFIG.THRESH_NUC, AE_weights, morph_scaler, randomise = False)
+        else:
+            mask_final = mask_refined
+
+        # Save final prostprocessed mask:
         save_path = os.path.join(CONFIG.PP_OUT_DIR, fname)
 
         # save as 16bit tiff if less than 2^16 gray values, 32 bit if not:
-        if np.amax(closed_im) <= 65536:
+        if np.amax(mask_final) <= 65536:
 
             # convert to 16bit integer images:
-            closed_im = img_as_uint(closed_im)
+            mask_final = img_as_uint(mask_final)
 
             # save output:
-            io.imsave(save_path, closed_im)
+            io.imsave(save_path, mask_final)
 
         else:
             # convert to 32bit float images:
-            closed_im = img_as_float32(closed_im)
+            mask_final = img_as_float32(mask_final)
 
             #save as tiff
-            io.imsave(save_path, closed_im)
+            io.imsave(save_path, mask_final)
 
 if __name__ == "__main__":
     
