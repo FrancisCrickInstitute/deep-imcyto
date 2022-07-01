@@ -16,7 +16,7 @@ export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rub
 ## RUN PIPELINE
 nextflow run ./main.nf\
     --input "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_TMA_REC_20190508/P1_TMA_REC_20190508.mcd"\
-    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results'\
+    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_seg_refactor'\
     --metadata './metadata.csv'\
     --full_stack_cppipe './assets/cppipes/full_stack_preprocessing.cppipe'\
     --segmentation_cppipe './assets/cppipes/segmentation_nuclei_linked.cppipe'\
@@ -29,10 +29,10 @@ nextflow run ./main.nf\
     --imctools_env "/camp/lab/swantonc/working/Alastair/.conda/envs/tf"\
     --md_cuda "CUDA/10.1.105"\
     --md_conda "Anaconda3"\
-    --imctools_dir "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results/imctools"\
-    --nuclear_weights_directory "./weights"\
-    --nuclear_ppdir "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results/nuclear_preprocess"\
-    --nuclear_segdir "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results/nuclear_segmentation"\
+    --imctools_dir "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_seg_refactor/imctools"\
+    --nuclear_weights_directory "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/weights"\
+    --nuclear_ppdir "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_seg_refactor/nuclear_preprocess"\
+    --nuclear_segdir "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_seg_refactor/nuclear_segmentation"\
     --segmentation_type "dilation"\
     --nuclear_dilation_radius 5\
     -profile crick\

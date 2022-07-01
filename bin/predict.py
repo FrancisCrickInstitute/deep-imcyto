@@ -2,6 +2,7 @@
 
 import os, sys, glob
 from math import ceil
+import argparse
 
 import numpy as np
 import pandas as pd
@@ -23,22 +24,13 @@ from pickle import load
 
 class configuration(object):
 
-    def __init__(self, IMAGE_PATH, ROOT_OUT, PANEL, IMAGEREGEX, WEIGHTS_PATH):
+    def __init__(self, args):
 
         # GET CURRENT WORKING DIRECTORY:
         self.WORKING_DIR = os.getcwd()
 
-        # IMC PANEL:    
-        self.PANEL = PANEL
-
-        # IMAGE SUBSET (I.E. PREDICT ON ONLY IMAGES MATCHING REGEX); if 'all' use wildcard:
-        if IMAGEREGEX == 'all':
-            self.PREDICTION_SUBSET = '*'
-        else:
-            self.PREDICTION_SUBSET = IMAGEREGEX
-
         # IMAGE_PATH TO TEST IMAGES:
-        self.TEST_PATH = IMAGE_PATH
+        self.TEST_IMAGE = args.image
 
         # POSTPROCESSING WATERSHED THRESHOLDS:
         self.NUCLEUS_CONFIDENCE = 0.5
@@ -52,7 +44,7 @@ class configuration(object):
         self.COMPACTNESS = 0
         
         # OUTPUT DIRECTORIES:
-        self.ROOT_OUT_DIR = f'{ROOT_OUT}/{PANEL}'
+        self.ROOT_OUT_DIR = args.outdir
         self.BOUNDARY_RESULTS_DIR = '{}/raw/boundaries/'.format(self.ROOT_OUT_DIR)
         self.EDGE_WEIGHTED_NUC_RESULTS_DIR = '{}/raw/edge_weighted_nuc/'.format(self.ROOT_OUT_DIR)
         self.COM_RESULTS_DIR = '{}/raw/com/'.format(self.ROOT_OUT_DIR)
@@ -61,7 +53,7 @@ class configuration(object):
         self.PP_OUT_DIR = '{}/postprocess_predictions'.format(self.ROOT_OUT_DIR)
 
         # PREFIX OF WEIGHTS FILE:
-        self.WEIGHTS_DIR = WEIGHTS_PATH
+        self.WEIGHTS_DIR = args.weights
 
         # DEFINE WEIGHTS PATHS FOR PREDICTIONS OF NUCLEI AND TOUCHING BOUNDARIES:
         self.BOUNDARY_WEIGHTS = os.path.join(self.WEIGHTS_DIR, 'boundaries.hdf5')
@@ -117,18 +109,13 @@ def main(CONFIG):
     # ~~~~ MAIN ~~~~ #
     ##################
 
-    IMAGE_LIST = glob.glob(os.path.join(CONFIG.TEST_PATH, '{}*.png'.format(CONFIG.PREDICTION_SUBSET)))
-    IMAGE_LIST.sort()
     LARGE_IMAGE_LIST = []
-
-    # GET ORIGINAL TEST IMAGE SIZES:
-    test_image_shapes = get_image_shapes(CONFIG.TEST_PATH, len(IMAGE_LIST), suffix='{}*.png'.format(CONFIG.PREDICTION_SUBSET))
  
-    # LOOP THROUGH IMAGES AND PREDICT:
-    for i in range(len(IMAGE_LIST)):
+    # RUN PREDICTION ON INPUT IMAGE:
+    if (CONFIG.TEST_IMAGE != None):
 
         # get image shape prior to prediction:
-        IMG = io.imread(IMAGE_LIST[i])
+        IMG = io.imread(CONFIG.TEST_IMAGE)
         IMG_SHAPE = IMG.shape
         MAX_IM_DIM = np.amax(IMG_SHAPE)
         PAD_SIZE = (ceil(MAX_IM_DIM/256)) * 256
@@ -137,7 +124,7 @@ def main(CONFIG):
 
         if PAD_SIZE <= 2560:
             """ 
-            # process images small enough to fit into memory:
+            # process imag.es small enough to fit into memory:
             """
 
             print('max image dimension: ', MAX_IM_DIM)
@@ -145,13 +132,13 @@ def main(CONFIG):
             print('GEN_TARGET_SIZE: ', GEN_TARGET_SIZE)
             
             # PREDICT TOUCHING BOUNDARIES :
-            predict_feature_pad(CONFIG.BOUNDARY_WEIGHTS, PAD_SHAPE, IMAGE_LIST[i], GEN_TARGET_SIZE, CONFIG.BOUNDARY_RESULTS_DIR, IMG_SHAPE)
+            predict_feature_pad(CONFIG.BOUNDARY_WEIGHTS, PAD_SHAPE, CONFIG.TEST_IMAGE, GEN_TARGET_SIZE, CONFIG.BOUNDARY_RESULTS_DIR, IMG_SHAPE)
 
             # PREDICT EDGE-WEIGHTED NUCLEI:
-            predict_feature_pad(CONFIG.WHOLE_NUCLEUS_WEIGHTS, PAD_SHAPE, IMAGE_LIST[i], GEN_TARGET_SIZE, CONFIG.EDGE_WEIGHTED_NUC_RESULTS_DIR, IMG_SHAPE)
+            predict_feature_pad(CONFIG.WHOLE_NUCLEUS_WEIGHTS, PAD_SHAPE, CONFIG.TEST_IMAGE, GEN_TARGET_SIZE, CONFIG.EDGE_WEIGHTED_NUC_RESULTS_DIR, IMG_SHAPE)
 
             # PREDICT COM:
-            predict_feature_pad(CONFIG.COM_WEIGHTS, PAD_SHAPE, IMAGE_LIST[i], GEN_TARGET_SIZE, CONFIG.COM_RESULTS_DIR, IMG_SHAPE)
+            predict_feature_pad(CONFIG.COM_WEIGHTS, PAD_SHAPE, CONFIG.TEST_IMAGE, GEN_TARGET_SIZE, CONFIG.COM_RESULTS_DIR, IMG_SHAPE)
 
             clear_session()
 
@@ -172,99 +159,99 @@ def main(CONFIG):
             print('Resizing to 2560x2560 pixels for prediction.')
             print('PAD_SHAPE: ', PAD_SHAPE)
             print('GEN_TARGET_SIZE: ', GEN_TARGET_SIZE)
-            LARGE_IMAGE_LIST.append(IMAGE_LIST[i])
+            LARGE_IMAGE_LIST.append(CONFIG.TEST_IMAGE)
 
             # PREDICT TOUCHING BOUNDARIES :
-            predict_feature_resize(CONFIG.BOUNDARY_WEIGHTS, PAD_SHAPE, IMAGE_LIST[i], GEN_TARGET_SIZE, CONFIG.BOUNDARY_RESULTS_DIR, MAX_SQUARE, IMG_SHAPE)
+            predict_feature_resize(CONFIG.BOUNDARY_WEIGHTS, PAD_SHAPE, CONFIG.TEST_IMAGE, GEN_TARGET_SIZE, CONFIG.BOUNDARY_RESULTS_DIR, MAX_SQUARE, IMG_SHAPE)
 
             # PREDICT EDGE-WEIGHTED NUCLEI:
-            predict_feature_resize(CONFIG.WHOLE_NUCLEUS_WEIGHTS, PAD_SHAPE, IMAGE_LIST[i], GEN_TARGET_SIZE, CONFIG.EDGE_WEIGHTED_NUC_RESULTS_DIR, MAX_SQUARE, IMG_SHAPE)
+            predict_feature_resize(CONFIG.WHOLE_NUCLEUS_WEIGHTS, PAD_SHAPE, CONFIG.TEST_IMAGE, GEN_TARGET_SIZE, CONFIG.EDGE_WEIGHTED_NUC_RESULTS_DIR, MAX_SQUARE, IMG_SHAPE)
 
             # PREDICT COM:
-            predict_feature_resize(CONFIG.COM_WEIGHTS, PAD_SHAPE, IMAGE_LIST[i], GEN_TARGET_SIZE, CONFIG.COM_RESULTS_DIR, MAX_SQUARE, IMG_SHAPE)
+            predict_feature_resize(CONFIG.COM_WEIGHTS, PAD_SHAPE, CONFIG.TEST_IMAGE, GEN_TARGET_SIZE, CONFIG.COM_RESULTS_DIR, MAX_SQUARE, IMG_SHAPE)
 
             clear_session()
 
-    # SAVE LARGE IMAGE LIST TO CSV:
-    large_img_df = pd.DataFrame(LARGE_IMAGE_LIST)
-    large_im_save_path = os.path.join(CONFIG.ROOT_OUT_DIR, 'LARGE_IMAGES.csv')
-    large_img_df.to_csv(large_im_save_path)
+        # SAVE LARGE IMAGE LIST TO CSV:
+        large_img_df = pd.DataFrame(LARGE_IMAGE_LIST)
+        large_im_save_path = os.path.join(CONFIG.ROOT_OUT_DIR, 'LARGE_IMAGES.csv')
+        large_img_df.to_csv(large_im_save_path)
 
-    # DO "PROBABILITY BASIN" WATERSHED, REMOVING SMALL OBJECTS:
-    PBW_rm_small_obj(CONFIG.EDGE_WEIGHTED_NUC_RESULTS_DIR, CONFIG.BOUNDARY_RESULTS_DIR, CONFIG.COM_RESULTS_DIR, CONFIG.PBW_WATERSHED_RESULTS_DIR, CONFIG.THRESH_NUC, CONFIG.THRESH_COM, min_obj_size=CONFIG.MIN_OBJ_SIZE, compactness = CONFIG.COMPACTNESS)
+        # DO "PROBABILITY BASIN" WATERSHED, REMOVING SMALL OBJECTS:
+        PBW_rm_small_obj(CONFIG.EDGE_WEIGHTED_NUC_RESULTS_DIR, CONFIG.BOUNDARY_RESULTS_DIR, CONFIG.COM_RESULTS_DIR, CONFIG.PBW_WATERSHED_RESULTS_DIR, CONFIG.THRESH_NUC, CONFIG.THRESH_COM, min_obj_size=CONFIG.MIN_OBJ_SIZE, compactness = CONFIG.COMPACTNESS)
 
 
-    #############################################
-    # PERFORM POSTPROCESSING of WATERSHED IMAGE #
-    #############################################
-    '''
-    [1] Perform instance level closing to refine nuclear shapes.
-    [2] Remove anomalous (usually undersegmented) nuclei with deep autoencoder model trained on ground truth nuclear
-        morphology stats.
-    [3] Re-segment anomalous regions with looser centre of mass criterion in order to tackle undersegmentation.
-    '''
-    # Autoencoder params:
-    scaler_path = os.path.join(CONFIG.WEIGHTS_DIR, 'nuclear_morph_scaler.pkl')
-    morph_scaler = load(open(scaler_path, 'rb'))
-    AE_weights = os.path.join(CONFIG.WEIGHTS_DIR, 'AE_weights.hdf5')
+        #############################################
+        # PERFORM POSTPROCESSING of WATERSHED IMAGE #
+        #############################################
+        '''
+        [1] Perform instance level closing to refine nuclear shapes.
+        [2] Remove anomalous (usually undersegmented) nuclei with deep autoencoder model trained on ground truth nuclear
+            morphology stats.
+        [3] Re-segment anomalous regions with looser centre of mass criterion in order to tackle undersegmentation.
+        '''
+        # Autoencoder params:
+        scaler_path = os.path.join(CONFIG.WEIGHTS_DIR, 'nuclear_morph_scaler.pkl')
+        morph_scaler = load(open(scaler_path, 'rb'))
+        AE_weights = os.path.join(CONFIG.WEIGHTS_DIR, 'AE_weights.hdf5')
 
-    ## image lists for postprocessing:
-    watershed_list = glob.glob('{}/{}*.tiff'.format(CONFIG.PBW_WATERSHED_RESULTS_DIR, CONFIG.PREDICTION_SUBSET))
-    nuc_list = glob.glob('{}/{}*predict.png'.format(CONFIG.EDGE_WEIGHTED_NUC_RESULTS_DIR, CONFIG.PREDICTION_SUBSET))
-    bound_list = glob.glob('{}/{}*predict.png'.format(CONFIG.BOUNDARY_RESULTS_DIR, CONFIG.PREDICTION_SUBSET))
-    com_list = glob.glob('{}/{}*predict.png'.format(CONFIG.COM_RESULTS_DIR, CONFIG.PREDICTION_SUBSET))
-    
-    # sort:
-    watershed_list.sort()
-    nuc_list.sort()
-    bound_list.sort()
-    com_list.sort()
-
-    # 
-    for i in range(len(watershed_list)):
+        ## image lists for postprocessing:
+        watershed_list = glob.glob('{}/*.tiff'.format(CONFIG.PBW_WATERSHED_RESULTS_DIR))
+        nuc_list = glob.glob('{}/*predict.png'.format(CONFIG.EDGE_WEIGHTED_NUC_RESULTS_DIR))
+        bound_list = glob.glob('{}/*predict.png'.format(CONFIG.BOUNDARY_RESULTS_DIR))
+        com_list = glob.glob('{}/*predict.png'.format(CONFIG.COM_RESULTS_DIR))
         
-        ## read necessary images:
-        watershed_im = io.imread(watershed_list[i])
-        nuc_im = io.imread(nuc_list[i])
-        boundary_im = io.imread(bound_list[i])
-        com_im = io.imread(com_list[i])
+        # sort:
+        watershed_list.sort()
+        nuc_list.sort()
+        bound_list.sort()
+        com_list.sort()
 
-        ## construct filename:
-        fname = os.path.split(watershed_list[i])[1]
-        imagename = fname.split('SUM_DNA_')[0]
-        fname = imagename + 'nuclear_mask.tiff'
+        # 
+        for i in range(len(watershed_list)):
+            
+            ## read necessary images:
+            watershed_im = io.imread(watershed_list[i])
+            nuc_im = io.imread(nuc_list[i])
+            boundary_im = io.imread(bound_list[i])
+            com_im = io.imread(com_list[i])
 
-        # Perform instance closing:
-        diamond_selem = diamond(1)
-        closed_im = instance_closing(watershed_im, strel = diamond_selem)
+            ## construct filename:
+            fname = os.path.split(watershed_list[i])[1]
+            imagename = fname.split('_predict')[0]
+            fname = imagename + '_nuclear_mask.tiff'
 
-        # Remove anomalies:
-        mask_refined, error_img, _ = process_anomalies(closed_im, AE_weights, morph_scaler, save_error_image = True, outdir = CONFIG.MSE_RESULTS_DIR, imagename = imagename)
+            # Perform instance closing:
+            diamond_selem = diamond(1)
+            closed_im = instance_closing(watershed_im, strel = diamond_selem)
 
-        # if any elements of the error array are greater than the error cutoff (==1), reprocess the regions that have this large error, else use this refinec mask as the final one:
-        if np.any(error_img > 1):
-            mask_final = reprocess_unlikely_labels(mask_refined, error_img, boundary_im, nuc_im, com_im, CONFIG.THRESH_COM_LOW, CONFIG.THRESH_NUC, AE_weights, morph_scaler, randomise = False)
-        else:
-            mask_final = mask_refined
+            # Remove anomalies:
+            mask_refined, error_img, _ = process_anomalies(closed_im, AE_weights, morph_scaler, save_error_image = True, outdir = CONFIG.MSE_RESULTS_DIR, imagename = imagename)
 
-        # Save final prostprocessed mask:
-        save_path = os.path.join(CONFIG.PP_OUT_DIR, fname)
+            # if any elements of the error array are greater than the error cutoff (==1), reprocess the regions that have this large error, else use this refinec mask as the final one:
+            if np.any(error_img > 1):
+                mask_final = reprocess_unlikely_labels(mask_refined, error_img, boundary_im, nuc_im, com_im, CONFIG.THRESH_COM_LOW, CONFIG.THRESH_NUC, AE_weights, morph_scaler, randomise = False)
+            else:
+                mask_final = mask_refined
 
-        # save as 16bit tiff if less than 2^16 gray values, 32 bit if not:
-        if np.amax(mask_final) <= 65536:
+            # Save final prostprocessed mask:
+            save_path = os.path.join(CONFIG.PP_OUT_DIR, fname)
 
-            # convert to 16bit integer images:
-            mask_final = img_as_uint(mask_final)
+            # save as 16bit tiff if less than 2^16 gray values, 32 bit if not:
+            if np.amax(mask_final) <= 65536:
 
-            # save output:
-            io.imsave(save_path, mask_final)
+                # convert to 16bit integer images:
+                mask_final = img_as_uint(mask_final)
 
-        else:
-            # convert to 32bit float images:
-            mask_final = img_as_float32(mask_final)
+                # save output:
+                io.imsave(save_path, mask_final)
 
-            #save as tiff
-            io.imsave(save_path, mask_final)
+            else:
+                # convert to 32bit float images:
+                mask_final = img_as_float32(mask_final)
+
+                #save as tiff
+                io.imsave(save_path, mask_final)
 
 if __name__ == "__main__":
     
@@ -274,8 +261,15 @@ if __name__ == "__main__":
     # sys.argv[5] = path to weights directory
     """
 
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--image', type=str, default=None, help='Path to image to predict on')
+    parser.add_argument('--weights', type=str, default=None, help='Path to weights directory')
+    parser.add_argument('--outdir', type=str, default=None, help='Path to output directory')
+    args = parser.parse_args()
+
     # create configuration based on input args:
-    CONFIG = configuration(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+    CONFIG = configuration(args)
 
     # run main with config:
     main(CONFIG)

@@ -11,6 +11,8 @@ def flatten_tiff(ArrayList channel) {
     // println file_list
     // println file_list.size()
     def new_array = []
+    println 'filelist size:'
+    println file_list.size
     for (int i=0; i<file_list.size(); i++) {
         def item = []
         item.add(sample)
@@ -22,20 +24,28 @@ def flatten_tiff(ArrayList channel) {
 }
 
 def get_roi_tuple(ArrayList channel) {
+    //gets [sample_id,roi_id,path_to_file] for single channels, allowing for mcd with single ROIs 
     def sample = channel[0]
     def file_list = channel[1]
     println file_list.getClass()
+    println file_list
     if (file_list.getClass() == java.util.ArrayList) {
+        println 'operating on arraylist'
         def new_array = []
         for (int i=0; i<file_list.size(); i++) {
             def item = []
             item.add(sample)
+            roi = file_list[i].getParent().getParent().getName()
+            println 'ROI', roi
             item.add(file_list[i].getParent().getParent().getName())
             item.add(file_list[i])
             new_array.add(item)
-        return new_array
-    }
+            println 'item'
+            println item
+            println new_array
+        }
 
+    return new_array
     }
     else {
         def new_array = []
@@ -43,12 +53,12 @@ def get_roi_tuple(ArrayList channel) {
         new_array.add(file_list.getParent().getParent().getName())
         new_array.add(file_list)
         println new_array
-        return new_array
+        
         }
-    
+    return new_array
 }
 
-workflow NUCLEAR_WF {
+workflow DILATION_WF {
 
     //TO DO: THIS SPAWNS MULTIPLE SEGMENTATION RUNS, WITH EACH SEGMENTING 
     //ALL THE FILES FROM EACH MCD IN THE INPUT AS IT IS PRODUCED
@@ -103,6 +113,8 @@ workflow NUCLEAR_WF {
         .groupTuple(by: [0,1])
         .map { it -> [ it[0], it[1], it[2].sort() ] }
         .set { ch_dna1 }
+
+    println 'ch_dna1'
     ch_dna1.view()
 
     // Group ch_dna2 files by sample and roi_id
@@ -125,9 +137,9 @@ workflow NUCLEAR_WF {
 
     // ch_full_stack_tiff.into { ch_full_stack_tiff; ch_full_stack_phe }
 
-    PREPROCESS_FULL_STACK(ch_full_stack_tiff, compensation.collect().ifEmpty([]), cppipe, plugins)
-    NUCLEAR_PREPROCESS(IMCTOOLS.out.ch_imctoolsdir, nuclear_ppdir)
-    NUCLEAR_SEGMENTATION(NUCLEAR_PREPROCESS.out.ch_preprocess_results, weights)
+    // PREPROCESS_FULL_STACK(ch_full_stack_tiff, compensation.collect().ifEmpty([]), cppipe, plugins)
+    NUCLEAR_PREPROCESS(ch_dna1, ch_dna2)
+    NUCLEAR_SEGMENTATION(NUCLEAR_PREPROCESS.out.ch_preprocessed_nuclei, weights)
     PSEUDO_HE(ch_dna1, ch_dna2, ch_Ru)
 
 
@@ -137,14 +149,14 @@ workflow NUCLEAR_WF {
     //     .map { it -> it + [file("${segdir.val}/p1/postprocess_predictions/${it[0]}-${it[1]}_nuclear_mask.tiff")] }
     //     .set { ch_full_stack_w_preds }
 
-    PREPROCESS_FULL_STACK.out.ch_preprocess_full_stack_tiff
-        .map { it -> [ it[0], it[1], [ it[2] ].flatten().sort()] }
-        .map { it -> it + [file("${segdir.val}/p1/postprocess_predictions/${it[0]}-${it[1]}_nuclear_mask.tiff")] }
-        .set { ch_full_stack_w_preds }
+    // PREPROCESS_FULL_STACK.out.ch_preprocess_full_stack_tiff
+    //     .map { it -> [ it[0], it[1], [ it[2] ].flatten().sort()] }
+    //     .map { it -> it + [file("${segdir.val}/p1/postprocess_predictions/${it[0]}-${it[1]}_nuclear_mask.tiff")] }
+    //     .set { ch_full_stack_w_preds }
 
     // .join(PREPROCESS_FULL_STACK.out.ch_preprocess_full_stack_tiff, by: [0,1])
 
-
-    NUCLEAR_DILATION(NUCLEAR_SEGMENTATION.out.ch_proceed_dilation, ch_full_stack_w_preds)
+    // TO DO : CONNECT NUC SEGMENTATION OUTPUT TO NUCLEAR DILATION
+    // NUCLEAR_DILATION(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions, ch_full_stack_w_preds)
   
 }

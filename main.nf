@@ -14,7 +14,7 @@ nextflow.enable.dsl=2
 include { helpMessage; parseInputs;
            } from './lib/core_functions.nf'
 
-include { NUCLEAR_WF } from './workflows/primary_pipeline.nf'
+include {DILATION_WF } from './workflows/primary_pipeline.nf'
 
 println params.nuclear_ppdir
 println params.nuclear_segdir
@@ -96,7 +96,7 @@ Channel
 *****************/
 workflow {
   
-  NUCLEAR_WF (ch_mcd, ch_metadata, ch_imctoolsdir, ch_nuclear_ppdir, ch_nuclear_segdir, ch_nuclear_weights, ch_compensation, ch_full_stack_cppipe, ch_cp_plugins )
+  DILATION_WF (ch_mcd, ch_metadata, ch_imctoolsdir, ch_nuclear_ppdir, ch_nuclear_segdir, ch_nuclear_weights, ch_compensation, ch_full_stack_cppipe, ch_cp_plugins )
   
 }
 
