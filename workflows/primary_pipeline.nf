@@ -65,9 +65,6 @@ workflow DILATION_WF {
     take:
     mcd
     metadata
-    imctoolsdir
-    nuclear_ppdir
-    segdir
     weights
     compensation
     cppipe
