@@ -14,20 +14,10 @@ nextflow.enable.dsl=2
 include { helpMessage; parseInputs;
            } from './lib/core_functions.nf'
 
-include {DILATION_WF } from './workflows/primary_pipeline.nf'
+include { DILATION_WF } from './workflows/primary_pipeline.nf'
+include { CONSENSUS_WF; CONSENSUS_WF_ILASTIK_PP } from './workflows/CCS.nf'
+include { MCD_QC } from './workflows/QC.nf'
 
-println params.nuclear_ppdir
-println params.nuclear_segdir
-println params.nuclear_weights_directory
-
-// params.segmentation_type = "dilation" //"dilation" or "cellprofiler"
-// params.nuclear_weights_directory = './weights'
-
-
-
-
-// {custom_runName; ch_output_docs; ch_output_docs_images; ch_mcd; ch_metadata; ch_full_stack_cppipe; ch_ilastik_stack_cppipe; ch_segmentation_cppipe; ch_ilastik_training_ilp; ch_compensation; ch_cp_plugins} = parseInputs()
-// parseInputs(params)
 
 /*
 * Input
@@ -66,14 +56,14 @@ if (params.input) {
 exit 1, "Input file not specified!"
 }
 
-if (params.metadata)             { ch_metadata = file(params.metadata, checkIfExists: true) }                         else { exit 1, "Metadata csv file not specified!" }
-if (params.full_stack_cppipe)    { ch_full_stack_cppipe = file(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full stack cppipe file not specified!" }
-if (params.ilastik_stack_cppipe) { ch_ilastik_stack_cppipe = file(params.ilastik_stack_cppipe, checkIfExists: true) } else { exit 1, "Ilastik stack cppipe file not specified!" }
-if (params.segmentation_cppipe)  { ch_segmentation_cppipe = file(params.segmentation_cppipe, checkIfExists: true) }   else { exit 1, "CellProfiler segmentation cppipe file not specified!" }
+if (params.metadata)             { ch_metadata = Channel.fromPath(params.metadata, checkIfExists: true) }                         else { exit 1, "Metadata csv file not specified!" }
+if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full stack cppipe file not specified!" }
+if (params.ilastik_stack_cppipe) { ch_ilastik_stack_cppipe = Channel.fromPath(params.ilastik_stack_cppipe, checkIfExists: true) } else { exit 1, "Ilastik stack cppipe file not specified!" }
+if (params.segmentation_cppipe)  { ch_segmentation_cppipe = Channel.fromPath(params.segmentation_cppipe, checkIfExists: true) }   else { exit 1, "CellProfiler segmentation cppipe file not specified!" }
 
 if (!params.skip_ilastik) {
     if (params.ilastik_training_ilp) {
-        ch_ilastik_training_ilp = file(params.ilastik_training_ilp, checkIfExists: true) } else { exit 1, "Ilastik training ilp file not specified!" }
+        ch_ilastik_training_ilp = Channel.fromPath(params.ilastik_training_ilp, checkIfExists: true) } else { exit 1, "Ilastik training ilp file not specified!" }
 }
 
 if (params.compensation_tiff) {
@@ -94,10 +84,32 @@ Channel
 /*****************
 * BEGIN PIPELINE *
 *****************/
+
+// convert to value channels so that singular channels can be used in the pipeline multiple times without being consumed and halting the workflow:
+cp_plugins = ch_cp_plugins.first()
+cp_plugins.view()
+compensation = ch_compensation.first()
+full_stack_cppipe = ch_full_stack_cppipe.first()
+ilastik_stack_cppipe = ch_ilastik_stack_cppipe.first()
+segmentation_cppipe = ch_segmentation_cppipe.first()
+ch_metadata = ch_metadata.first()
+
 workflow {
-  
-  DILATION_WF (ch_mcd, ch_metadata, ch_imctoolsdir, ch_nuclear_ppdir, ch_nuclear_segdir, ch_nuclear_weights, ch_compensation, ch_full_stack_cppipe, ch_cp_plugins )
-  
+    if (params.segmentation_type == 'dilation'){
+        DILATION_WF (ch_mcd, ch_metadata, ch_imctoolsdir, ch_nuclear_ppdir, ch_nuclear_segdir, ch_nuclear_weights, compensation, full_stack_cppipe, cp_plugins )
+    }
+    else if (params.segmentation_type == 'consensus'){
+        CONSENSUS_WF (ch_mcd, ch_metadata, ch_imctoolsdir, ch_nuclear_ppdir, ch_nuclear_segdir, ch_nuclear_weights, compensation, full_stack_cppipe, segmentation_cppipe, cp_plugins )
+    }
+    else if (params.segmentation_type == 'consensus_il'){
+        CONSENSUS_WF_ILASTIK_PP (ch_mcd, ch_metadata, ch_imctoolsdir, ch_nuclear_ppdir, ch_nuclear_segdir, ch_nuclear_weights, compensation, full_stack_cppipe, ilastik_stack_cppipe, segmentation_cppipe, cp_plugins )
+    }
+    else if (params.segmentation_type == 'QC'){
+        MCD_QC (ch_mcd, ch_metadata)
+    }
+    else {
+        exit 1, "Segmentation type not specified!"
+    }
 }
 
 

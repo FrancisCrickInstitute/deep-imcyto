@@ -13,7 +13,6 @@ process NUCLEAR_DILATION {
     conda params.dl_conda_env
 
     input:
-    val flag //from ch_proceed_dilation
     tuple val(name), val(roi), path(tiff), path(mask) //from ch_preprocess_full_stack_tiff_dilation
 
     output:
@@ -23,6 +22,6 @@ process NUCLEAR_DILATION {
     """
     echo tiff_files: ${tiff}
     echo mask_files: ${mask}
-    nuclear_dilation.py --input_mask ${mask} --output_directory ./ --radius ${params.nuclear_dilation_radius} 
+    nuclear_dilation.py --input_mask ${mask} --output_directory . --radius ${params.nuclear_dilation_radius} 
     """
 }
