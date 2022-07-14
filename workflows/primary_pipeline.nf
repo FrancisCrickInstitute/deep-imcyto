@@ -3,59 +3,7 @@ include { NUCLEAR_DILATION } from '../modules/nuclear_dilation.nf'
 include { IMCTOOLS } from '../modules/imctools.nf'
 include { PREPROCESS_FULL_STACK } from '../modules/cellprofiler_pp_seg.nf'
 include {PSEUDO_HE } from '../modules/pseudo_HE.nf'
-
-// Function to get list of [sample_id,roi_id,path_to_file]
-def flatten_tiff(ArrayList channel) {
-    def sample = channel[0]
-    def file_list = channel[1]
-    // println file_list
-    // println file_list.size()
-    def new_array = []
-
-    for (int i=0; i<file_list.size(); i++) {
-        def item = []
-        item.add(sample)
-        item.add(file_list[i].getParent().getParent().getName())
-        item.add(file_list[i])
-        new_array.add(item)
-    }
-    return new_array
-}
-
-def get_roi_tuple(ArrayList channel) {
-    //gets [sample_id,roi_id,path_to_file] for single channels, allowing for mcd with single ROIs 
-    def sample = channel[0]
-    def file_list = channel[1]
-    // println file_list.getClass()
-    // println file_list
-    if (file_list.getClass() == java.util.ArrayList) {
-        // println 'operating on arraylist'
-        def new_array = []
-        for (int i=0; i<file_list.size(); i++) {
-            def item = []
-            item.add(sample)
-            roi = file_list[i].getParent().getParent().getName()
-            // println 'ROI', roi
-            item.add(file_list[i].getParent().getParent().getName())
-            item.add(file_list[i])
-            new_array.add(item)
-            // println 'item'
-            // println item
-            // println new_array
-        }
-
-        return new_array
-    }
-    else {
-        def new_array = []
-        new_array.add(sample)
-        new_array.add(file_list.getParent().getParent().getName())
-        new_array.add(file_list)
-        println new_array
-        return new_array
-    }
-    
-}
+include {flatten_tiff ; get_roi_tuple} from '../lib/core_functions.nf'
 
 workflow DILATION_WF {
 
@@ -63,86 +11,73 @@ workflow DILATION_WF {
     //ALL THE FILES FROM EACH MCD IN THE INPUT AS IT IS PRODUCED
   
     take:
-    mcd
-    metadata
-    weights
-    compensation
-    cppipe
-    plugins
+        mcd
+        metadata
+        weights
+        compensation
+        cppipe
+        plugins
     
-    // NUCLEAR_PREPROCESS(ch_imctoolsdir, ch_nuclear_ppdir)
+
     main:
-    IMCTOOLS(mcd, metadata)
+        
+        //Run IMCTOOLS:
+        IMCTOOLS(mcd, metadata)
 
 
 
-    // Group full stack files by sample and roi_id
-    // println "IMC TOOLS:"
-    // IMCTOOLS.out.ch_full_stack_tiff.view()
-    IMCTOOLS.out.ch_full_stack_tiff
-        .map { flatten_tiff(it) }
-        .flatten()
-        .collate(3)
-        .groupTuple(by: [0,1])
-        .map { it -> [ it[0], it[1], it[2].sort() ] }
-        // .take(-1) //.last() produced expected out[ut for roi-1]
-        .set { ch_full_stack_mapped_tiff }
-
-    // // Group ilastik stack files by sample and roi_id
-    // ch_ilastik_stack_tiff
-    //     .map { flatten_tiff(it) }
-    //     .flatten()
-    //     .collate(3)
-    //     .groupTuple(by: [0,1])
-    //     .map { it -> [ it[0], it[1], it[2].sort() ] }
-    //     .set { ch_ilastik_stack_tiff }
-
-    // Group ch_dna1 files by sample and roi_id
-    IMCTOOLS.out.ch_dna1
-        .map { get_roi_tuple(it) }
-        .flatten()
-        .collate(3)
-        .groupTuple(by: [0,1])
-        .map { it -> [ it[0], it[1], it[2].sort() ] }
-        .set { ch_dna1 }
-
-    // Group ch_dna2 files by sample and roi_id
-    IMCTOOLS.out.ch_dna2
-        .map { get_roi_tuple(it) }
-        .flatten()
-        .collate(3)
-        .groupTuple(by: [0,1])
-        .map { it -> [ it[0], it[1], it[2].sort() ] }
-        .set { ch_dna2 }
-
-    // Group ch_Ru files by sample and roi_id
-    IMCTOOLS.out.ch_Ru
-        .map { get_roi_tuple(it) }
-        .flatten()
-        .collate(3)
-        .groupTuple(by: [0,1])
-        .map { it -> [ it[0], it[1], it[2].sort() ] }
-        .set { ch_Ru }
+        // Group full stack files by sample and roi_id
+        // println "IMC TOOLS:"
+        // IMCTOOLS.out.ch_full_stack_tiff.view()
+        IMCTOOLS.out.ch_full_stack_tiff
+            .map { flatten_tiff(it) }
+            .flatten()
+            .collate(3)
+            .groupTuple(by: [0,1])
+            .map { it -> [ it[0], it[1], it[2].sort() ] }
+            // .take(-1) //.last() produced expected out[ut for roi-1]
+            .set { ch_full_stack_mapped_tiff }
 
 
-    PREPROCESS_FULL_STACK(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe, plugins)
-    
-    NUCLEAR_PREPROCESS(ch_dna1, ch_dna2)
-    NUCLEAR_SEGMENTATION(NUCLEAR_PREPROCESS.out.ch_preprocessed_nuclei, weights)
-    PSEUDO_HE(ch_dna1, ch_dna2, ch_Ru)
+        // Group ch_dna1 files by sample and roi_id
+        IMCTOOLS.out.ch_dna1
+            .map { get_roi_tuple(it) }
+            .flatten()
+            .collate(3)
+            .groupTuple(by: [0,1])
+            .map { it -> [ it[0], it[1], it[2].sort() ] }
+            .set { ch_dna1 }
+
+        // Group ch_dna2 files by sample and roi_id
+        IMCTOOLS.out.ch_dna2
+            .map { get_roi_tuple(it) }
+            .flatten()
+            .collate(3)
+            .groupTuple(by: [0,1])
+            .map { it -> [ it[0], it[1], it[2].sort() ] }
+            .set { ch_dna2 }
+
+        // Group ch_Ru files by sample and roi_id
+        IMCTOOLS.out.ch_Ru
+            .map { get_roi_tuple(it) }
+            .flatten()
+            .collate(3)
+            .groupTuple(by: [0,1])
+            .map { it -> [ it[0], it[1], it[2].sort() ] }
+            .set { ch_Ru }
 
 
-    // PREPROCESS_FULL_STACK.out.ch_preprocess_full_stack_tiff
-    //     .join(PREPROCESS_FULL_STACK.out.ch_preprocess_full_stack_tiff, by: [0,1])
-    //     .map { it -> [ it[0], it[1], [ it[2], it[3] ].flatten().sort()] }
-    //     .map { it -> it + [file("${segdir.val}/p1/postprocess_predictions/${it[0]}-${it[1]}_nuclear_mask.tiff")] }
-    //     .set { ch_full_stack_w_preds }
-    
-    PREPROCESS_FULL_STACK.out.ch_preprocess_full_stack_tiff
-        .join(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions, by: [0,1])
-        .set {ch_seg_stack}
+        PREPROCESS_FULL_STACK(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe, plugins)
+        
+        NUCLEAR_PREPROCESS(ch_dna1, ch_dna2)
+        NUCLEAR_SEGMENTATION(NUCLEAR_PREPROCESS.out.ch_preprocessed_nuclei, weights)
+        PSEUDO_HE(ch_dna1, ch_dna2, ch_Ru)
+        
+        PREPROCESS_FULL_STACK.out.ch_preprocess_full_stack_tiff
+            .join(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions, by: [0,1])
+            .set {ch_seg_stack}
 
-    // TO DO : CONNECT NUC SEGMENTATION OUTPUT TO NUCLEAR DILATION
-    NUCLEAR_DILATION(ch_seg_stack)
+        // TO DO : CONNECT NUC SEGMENTATION OUTPUT TO NUCLEAR DILATION
+        NUCLEAR_DILATION(ch_seg_stack)
   
 }

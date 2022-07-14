@@ -153,8 +153,6 @@ def parseInputs(params){
 def flatten_tiff(ArrayList channel) {
     def sample = channel[0]
     def file_list = channel[1]
-    // println file_list
-    // println file_list.size()
     def new_array = []
 
     for (int i=0; i<file_list.size(); i++) {
@@ -171,22 +169,17 @@ def get_roi_tuple(ArrayList channel) {
     //gets [sample_id,roi_id,path_to_file] for single channels, allowing for mcd with single ROIs 
     def sample = channel[0]
     def file_list = channel[1]
-    // println file_list.getClass()
-    // println file_list
+
     if (file_list.getClass() == java.util.ArrayList) {
-        // println 'operating on arraylist'
+
         def new_array = []
         for (int i=0; i<file_list.size(); i++) {
             def item = []
             item.add(sample)
             roi = file_list[i].getParent().getParent().getName()
-            // println 'ROI', roi
             item.add(file_list[i].getParent().getParent().getName())
             item.add(file_list[i])
             new_array.add(item)
-            // println 'item'
-            // println item
-            // println new_array
         }
 
         return new_array
@@ -196,8 +189,16 @@ def get_roi_tuple(ArrayList channel) {
         new_array.add(sample)
         new_array.add(file_list.getParent().getParent().getName())
         new_array.add(file_list)
-        println new_array
         return new_array
     }
     
+}
+
+def group_channel(x){
+    grouped = x.map { get_roi_tuple(it) }
+                .flatten()
+                .collate(3)
+                .groupTuple(by: [0,1])
+                .map { it -> [ it[0], it[1], it[2].sort() ] }
+    return grouped
 }

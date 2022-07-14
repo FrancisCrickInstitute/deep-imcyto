@@ -27,10 +27,8 @@ include { MCD_QC } from './workflows/QC.nf'
 * Make channels for nuclear segmentation
 */
 
-ch_nuclear_ppdir = Channel.value(params.nuclear_ppdir)
-ch_nuclear_segdir = Channel.value(params.nuclear_segdir)
 ch_nuclear_weights = Channel.value(params.nuclear_weights_directory)
-ch_imctoolsdir = Channel.value(params.imctoolsdir)
+
 
 // Has the run name been specified by the user?
 // this has the bonus effect of catching both -name and --name
@@ -95,14 +93,15 @@ segmentation_cppipe = ch_segmentation_cppipe.first()
 ch_metadata = ch_metadata.first()
 
 workflow {
+
     if (params.segmentation_type == 'dilation'){
-        DILATION_WF (ch_mcd, ch_metadata, ch_imctoolsdir, ch_nuclear_ppdir, ch_nuclear_segdir, ch_nuclear_weights, compensation, full_stack_cppipe, cp_plugins )
+        DILATION_WF (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, cp_plugins )
     }
     else if (params.segmentation_type == 'consensus'){
-        CONSENSUS_WF (ch_mcd, ch_metadata, ch_imctoolsdir, ch_nuclear_ppdir, ch_nuclear_segdir, ch_nuclear_weights, compensation, full_stack_cppipe, segmentation_cppipe, cp_plugins )
+        CONSENSUS_WF (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, segmentation_cppipe, cp_plugins )
     }
     else if (params.segmentation_type == 'consensus_il'){
-        CONSENSUS_WF_ILASTIK_PP (ch_mcd, ch_metadata, ch_imctoolsdir, ch_nuclear_ppdir, ch_nuclear_segdir, ch_nuclear_weights, compensation, full_stack_cppipe, ilastik_stack_cppipe, segmentation_cppipe, cp_plugins )
+        CONSENSUS_WF_ILASTIK_PP (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, ilastik_stack_cppipe, segmentation_cppipe, cp_plugins )
     }
     else if (params.segmentation_type == 'QC'){
         MCD_QC (ch_mcd, ch_metadata)
@@ -110,6 +109,7 @@ workflow {
     else {
         exit 1, "Segmentation type not specified!"
     }
+
 }
 
 

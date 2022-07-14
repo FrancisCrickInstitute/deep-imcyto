@@ -12,7 +12,7 @@ export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rub
 ## RUN PIPELINE
 nextflow run ./main.nf\
     --input "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_tonsil_start_20190508/P1_tonsil_start_20190508.mcd"\
-    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_20220712'\
+    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_20220712_d'\
     --metadata './metadata.csv'\
     --full_stack_cppipe './assets/cppipes/full_stack_preprocessing.cppipe'\
     --segmentation_cppipe './assets/cppipes/segmentationP1.cppipe'\
@@ -25,14 +25,11 @@ nextflow run ./main.nf\
     --imctools_env "/camp/lab/swantonc/working/Alastair/.conda/envs/tf"\
     --md_cuda "CUDA/10.1.105"\
     --md_conda "Anaconda3"\
-    --imctools_dir "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_seg_refactor/imctools"\
     --nuclear_weights_directory "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/weights"\
-    --nuclear_ppdir "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_seg_refactor/nuclear_preprocess"\
-    --nuclear_segdir "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_seg_refactor/nuclear_segmentation"\
     --segmentation_type "consensus_il"\
     --nuclear_dilation_radius 5\
     -profile crick\
-    -resume
+    # -resume
 
 
 
@@ -52,4 +49,4 @@ nextflow run ./main.nf\
 # './assets/cppipes/segmentationP1_CCS_median.cppipe'
 
 # When  we run this on all tx100 data with two metadata csvs, just run this command twice, specifying the two metadata csvs  with different filenames.
-# todo: genericise base config and add specific config for rubicon.
+# todo: genericise base config and add specific config for rubicon.; delete m_summary.py and m_summary.pyc; remove truth.py and truth.pyc
