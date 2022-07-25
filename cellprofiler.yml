@@ -1,0 +1,16 @@
+name: cellprofiler
+channels:
+  - defaults
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.9
+  - scikit-image
+  - numpy
+  - pandas
+  - jupyter
+  - cellprofiler
+  - cellprofiler-core
+  - seaborn
+  - matplotlib
+  - scipy
