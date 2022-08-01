@@ -22,7 +22,7 @@ process IMCTOOLS {
     tuple val(name), path("*/full_stack/191Ir_DNA1.tiff"), emit: ch_dna1
     tuple val(name), path("*/full_stack/193Ir_DNA2.tiff"), emit: ch_dna2
     tuple val(name), path("*/full_stack/100Ru_ruthenium.tiff"), emit: ch_Ru
-    path "*/*ome.tiff"
+    path "*/*ome.tiff", emit: ch_ome_tiff
     path "*.csv"
     path "*version.txt", emit: ch_imctools_version
     val "${params.outdir}/imctools", emit: ch_imctoolsdir

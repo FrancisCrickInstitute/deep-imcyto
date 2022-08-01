@@ -11,9 +11,9 @@ export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rub
 
 ## RUN PIPELINE
 nextflow run ./main.nf\
-    --input "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_tonsil_start_20190508/P1_tonsil_start_20190508.mcd"\
+    --input "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA004/*/*.mcd"\
     --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_20220712_d'\
-    --metadata './metadata.csv'\
+    --metadata './assets/metadata/run_2_metadata.csv'\
     --full_stack_cppipe './assets/cppipes/full_stack_preprocessing.cppipe'\
     --segmentation_cppipe './assets/cppipes/segmentationP1.cppipe'\
     --ilastik_stack_cppipe './assets/cppipes/ilastik_stack_preprocessing.cppipe'\
