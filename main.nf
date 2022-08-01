@@ -23,13 +23,6 @@ include { MCD_QC } from './workflows/QC.nf'
 * Input
 */
 
-/*
-* Make channels for nuclear segmentation
-*/
-
-ch_nuclear_weights = Channel.value(params.nuclear_weights_directory)
-
-
 // Has the run name been specified by the user?
 // this has the bonus effect of catching both -name and --name
 custom_runName = params.name
@@ -58,6 +51,7 @@ if (params.metadata)             { ch_metadata = Channel.fromPath(params.metadat
 if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full stack cppipe file not specified!" }
 if (params.ilastik_stack_cppipe) { ch_ilastik_stack_cppipe = Channel.fromPath(params.ilastik_stack_cppipe, checkIfExists: true) } else { exit 1, "Ilastik stack cppipe file not specified!" }
 if (params.segmentation_cppipe)  { ch_segmentation_cppipe = Channel.fromPath(params.segmentation_cppipe, checkIfExists: true) }   else { exit 1, "CellProfiler segmentation cppipe file not specified!" }
+if (params.nuclear_weights_directory) { ch_nuclear_weights = Channel.fromPath(params.nuclear_weights_directory, checkIfExists: true) } else { exit 1, "Nuclear weights directory not specified!" }
 
 if (!params.skip_ilastik) {
     if (params.ilastik_training_ilp) {
@@ -91,6 +85,7 @@ full_stack_cppipe = ch_full_stack_cppipe.first()
 ilastik_stack_cppipe = ch_ilastik_stack_cppipe.first()
 segmentation_cppipe = ch_segmentation_cppipe.first()
 ch_metadata = ch_metadata.first()
+ch_nuclear_weights = ch_nuclear_weights.first()
 
 workflow {
 
