@@ -14,7 +14,7 @@ nextflow.enable.dsl=2
 include { helpMessage; parseInputs;
            } from './lib/core_functions.nf'
 
-include { DILATION_WF } from './workflows/primary_pipeline.nf'
+include { DILATION_WF } from './workflows/dilation.nf'
 include { CONSENSUS_WF; CONSENSUS_WF_ILASTIK_PP } from './workflows/CCS.nf'
 include { MCD_QC } from './workflows/QC.nf'
 
