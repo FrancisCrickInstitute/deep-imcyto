@@ -11,9 +11,9 @@ export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rub
 
 ## RUN PIPELINE
 nextflow run ./main.nf\
-    --input "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA004/*/*.mcd"\
-    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_20220712_d'\
-    --metadata './assets/metadata/run_2_metadata.csv'\
+    --input "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_tonsil_start_20190508/P1_tonsil_start_20190508.mcd"\
+    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_20220802_b'\
+    --metadata './assets/metadata/run_1_metadata.csv'\
     --full_stack_cppipe './assets/cppipes/full_stack_preprocessing.cppipe'\
     --segmentation_cppipe './assets/cppipes/segmentationP1.cppipe'\
     --ilastik_stack_cppipe './assets/cppipes/ilastik_stack_preprocessing.cppipe'\
@@ -26,7 +26,7 @@ nextflow run ./main.nf\
     --md_cuda "CUDA/10.1.105"\
     --md_conda "Anaconda3"\
     --nuclear_weights_directory "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/weights"\
-    --segmentation_type "consensus_il"\
+    --segmentation_type 'dilation'\
     --nuclear_dilation_radius 5\
     -profile crick\
     # -resume
@@ -37,6 +37,7 @@ nextflow run ./main.nf\
 ## './assets/cppipes/segmentation_nuclei_linked.cppipe'
 
 ## "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_TMA_REC_20190508/P1_TMA_REC_20190508.mcd" \
+# "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA004/*/*.mcd"
 ## "/camp/lab/swantonc/inputs/flowcytometry/Katey Enfield/asb_case/Slide3_ASB/P1_Slide3_ASB_20200716_KE_HYPG/P1_Slide3_ASB_20200716_KE_HYPG.mcd"/
 ## "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_tonsil_start_20190508/P1_tonsil_start_20190508.mcd"
 # '/camp/lab/swantonc/working/collive/rubicon/cell_segmentation/nextflow_runs/P1/20190722_Run3/mcd/*.mcd'
@@ -50,3 +51,4 @@ nextflow run ./main.nf\
 
 # When  we run this on all tx100 data with two metadata csvs, just run this command twice, specifying the two metadata csvs  with different filenames.
 # todo: genericise base config and add specific config for rubicon.; delete m_summary.py and m_summary.pyc; remove truth.py and truth.pyc
+# "consensus_il"

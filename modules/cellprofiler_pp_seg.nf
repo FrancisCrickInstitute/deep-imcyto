@@ -19,14 +19,11 @@ process PREPROCESS_FULL_STACK {
 
     output:
     tuple val(name), val(roi), path("full_stack/*"), emit: ch_preprocess_full_stack_tiff
+    tuple val(name), val(roi), path("full_stack"), emit: ch_preprocess_full_stack_dir
     path "*version.txt", emit: ch_cellprofiler_version
 
     script:
     """
-    echo "this is the tiff var:"
-    echo $tiff
-    echo $name
-    echo $roi
     export _JAVA_OPTIONS="-Xms${task.memory.toGiga()/2}g -Xmx${task.memory.toGiga()}g"
     cellprofiler \\
         --run-headless \\
