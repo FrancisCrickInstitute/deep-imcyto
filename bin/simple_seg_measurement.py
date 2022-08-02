@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import skimage.io as io
 import skimage.measure as measure
 import numpy as np
@@ -27,7 +29,8 @@ def main(args):
     measurements = measure.regionprops_table(label_image=mask, 
                             intensity_image=stack, 
                             properties=properties)
-
+    measurements = pd.DataFrame(measurements)
+    
     intensity_named = ['mean_intensity_'+ elem for elem in markers]
     intensity_numbered = [f'mean_intensity-{i}' for i in range(len(markers))]
     rename_dict = dict(zip(intensity_numbered,intensity_named))
