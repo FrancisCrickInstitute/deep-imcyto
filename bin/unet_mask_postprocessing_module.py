@@ -12,13 +12,11 @@
 import glob, os
 import skimage.io as io
 import numpy as np
-from skimage.morphology import watershed, remove_small_objects, opening, dilation, diamond
-from scipy.ndimage.morphology import distance_transform_edt
 from skimage.util import img_as_uint, invert, img_as_float32
-from skimage.filters import threshold_otsu, gaussian
 from scipy.ndimage import label
+from skimage.segmentation import watershed
 
-import numpy as np
+
 import cupy as cp
 from tqdm import *
 from cupy import in1d

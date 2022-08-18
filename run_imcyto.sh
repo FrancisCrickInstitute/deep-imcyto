@@ -3,16 +3,16 @@
 ## LOAD MODULES
 ml purge
 ml Nextflow/22.04.0 #Nextflow/0.32.0 #19.04.0 #Nextflow/21.04.3 #Nextflow/21.04.0 # Nextflow/20.01.0
-# ml Singularity/3.6.4
-ml Singularity/2.6.0-foss-2016b
-export SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rubicon/inputs/containers/imcyto_nxf_singularity'
-export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rubicon/inputs/containers/imcyto_nxf_singularity'
+ml Singularity/3.6.4
+# ml Singularity/2.6.0-foss-2016b
+export SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rubicon/inputs/containers/deep-imcyto'
+export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rubicon/inputs/containers/deep-imcyto'
 
 
 ## RUN PIPELINE
 nextflow run ./main.nf\
     --input "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_tonsil_start_20190508/P1_tonsil_start_20190508.mcd"\
-    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_20220802_b'\
+    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/container_testing_20220817'\
     --metadata './assets/metadata/run_1_metadata.csv'\
     --full_stack_cppipe './assets/cppipes/full_stack_preprocessing.cppipe'\
     --segmentation_cppipe './assets/cppipes/segmentationP1.cppipe'\
@@ -23,7 +23,7 @@ nextflow run ./main.nf\
     --email alastair.magness@crick.ac.uk\
     --dl_conda_env "/camp/lab/swantonc/working/Alastair/.conda/envs/tf"\
     --imctools_env "/camp/lab/swantonc/working/Alastair/.conda/envs/tf"\
-    --md_cuda "CUDA/10.1.105"\
+    --md_cuda "CUDA/10.2.89-GCC-8.3.0"\
     --md_conda "Anaconda3"\
     --nuclear_weights_directory "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/weights"\
     --segmentation_type 'dilation'\
