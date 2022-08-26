@@ -17,6 +17,7 @@ include { helpMessage; parseInputs;
 include { DILATION_WF } from './workflows/dilation.nf'
 include { CONSENSUS_WF; CONSENSUS_WF_ILASTIK_PP } from './workflows/CCS.nf'
 include { MCD_QC } from './workflows/QC.nf'
+include { check_params; print_logo } from './modules/util.nf'
 
 
 /*
@@ -88,6 +89,11 @@ ch_metadata = ch_metadata.first()
 ch_nuclear_weights = ch_nuclear_weights.first()
 
 workflow {
+
+    print_logo()
+    check_params()
+
+    ch_mcd.view()
 
     if (params.segmentation_type == 'dilation'){
         DILATION_WF (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, cp_plugins )

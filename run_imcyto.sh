@@ -8,12 +8,13 @@ ml Singularity/3.6.4
 export SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rubicon/inputs/containers/deep-imcyto'
 export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rubicon/inputs/containers/deep-imcyto'
 
+flowcytometry="/camp/stp/flowcytometry/data/labs/swantonc/outputs/Katey Enfield/InstrumentComparisons"
 
 ## RUN PIPELINE
 nextflow run ./main.nf\
-    --input "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_tonsil_start_20190508/P1_tonsil_start_20190508.mcd"\
-    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/container_testing_20220817'\
-    --metadata './assets/metadata/run_1_metadata.csv'\
+    --input "${flowcytometry}/*/*/*After*.mcd"\
+    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_qc_gaschange_2'\
+    --metadata '/camp/project/proj-tracerx-lung/tctProjects/rubicon/qc/general/imc/qc_gaschange/outputs/nextflow/p2/metadata.csv'\
     --full_stack_cppipe './assets/cppipes/full_stack_preprocessing.cppipe'\
     --segmentation_cppipe './assets/cppipes/segmentationP1.cppipe'\
     --ilastik_stack_cppipe './assets/cppipes/ilastik_stack_preprocessing.cppipe'\
@@ -29,7 +30,7 @@ nextflow run ./main.nf\
     --segmentation_type 'dilation'\
     --nuclear_dilation_radius 5\
     -profile crick\
-    # -resume
+    -resume
 
 
 
