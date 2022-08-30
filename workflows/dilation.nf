@@ -1,9 +1,9 @@
 include { NUCLEAR_PREPROCESS; NUCLEAR_SEGMENTATION } from '../modules/nuclear_segmentation.nf'
 include { NUCLEAR_DILATION; DILATION_MEASURE; DILATION_MEASURE as CELL_MEASURE } from '../modules/nuclear_dilation.nf'
-include { IMCTOOLS } from '../modules/imctools.nf'
 include { PREPROCESS_FULL_STACK } from '../modules/cellprofiler_pp_seg.nf'
 include {PSEUDO_HE } from '../modules/pseudo_HE.nf'
-include {flatten_tiff ; get_roi_tuple; group_channel} from '../lib/core_functions.nf'
+include {flatten_tiff ; get_roi_tuple; get_fullstack_tuple; group_channel; group_fullstack} from '../lib/core_functions.nf'
+include {IMCTOOLS; CORRECT_SPILLOVER; REMOVE_HOTPIXELS} from '../modules/preprocessing.nf'
 
 workflow DILATION_WF {
 
@@ -16,7 +16,7 @@ workflow DILATION_WF {
     *    the mean intensity per cell.
     * ----------------------------------------------------------------------------------------------------------------------
     */
-  
+
     take:
         mcd
         metadata
@@ -37,33 +37,89 @@ workflow DILATION_WF {
         ch_dna2 = group_channel(IMCTOOLS.out.ch_dna2)
         ch_Ru = group_channel(IMCTOOLS.out.ch_Ru)
 
-        // Preprocess channels:
-        PREPROCESS_FULL_STACK(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe, plugins)
+        IMCTOOLS.out.ch_full_stack_dir.view()
+
+        ch_full_stack_dir_mapped = group_fullstack(IMCTOOLS.out.ch_full_stack_dir)
+
+        println("\nch_full_stack_dir_mapped: ")
+        ch_full_stack_dir_mapped.view()
+
+        // Perform spillover correction if required:
+        if (params.compensation_tiff != false) {
+
+            //Run PREPROCESS_FULL_STACK:
+            CORRECT_SPILLOVER(ch_full_stack_dir_mapped, metadata)
+            
+            // Group full stack files by sample and roi_id:
+            ch_full_stack_mapped_tiff = group_channel(CORRECT_SPILLOVER.out.ch_spillover_comp_tiff)
+            // ch_dna1 = group_channel(CORRECT_SPILLOVER.out.ch_dna1)
+            // ch_dna2 = group_channel(CORRECT_SPILLOVER.out.ch_dna2)
+            // ch_Ru = group_channel(CORRECT_SPILLOVER.out.ch_Ru)
+
+            // preprocess compensated channels with desired method:
+            if (params.preprocess_method == 'cellprofiler') {
+                // Preprocess channels with a specified cppipe:
+                PREPROCESS_FULL_STACK(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe, plugins)
+            }
+            else if (params.preprocess_method == 'hotpixel') {
+                // Remove hot pixels:
+                // CORRECT_SPILLOVER.out.ch_comp_stack_dir.view()
+                // ch_comp_stack_dir_mapped = group_fullstack(CORRECT_SPILLOVER.out.ch_comp_stack_dir)
+                CORRECT_SPILLOVER.out.ch_comp_stack_dir.view()
+                REMOVE_HOTPIXELS(CORRECT_SPILLOVER.out.ch_comp_stack_dir, metadata)
+            }
+            else if (params.preprocess_method == 'none') {
+                // Do nothing:
+                ch_full_stack_mapped_tiff = ch_full_stack_mapped_tiff
+            }
+            else { exit 1, "IMC channel preprocessing method not recognised!" }
+            
+        }
+
+        else {
+
+            // preprocess uncompensated channels with desired method:
+            if (params.preprocess_method == 'cellprofiler') {
+                // Preprocess channels with a specified cppipe:
+                PREPROCESS_FULL_STACK(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe, plugins)
+            }
+            else if (params.preprocess_method == 'hotpixel') {
+                // Remove hot pixels:
+                REMOVE_HOTPIXELS(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe, plugins)
+            }
+            else if (params.preprocess_method == 'none') {
+                // Do nothing:
+                ch_full_stack_mapped_tiff = ch_full_stack_mapped_tiff
+            }
+            else { exit 1, "IMC channel preprocessing method not recognised!" }
+        }
+
+
         
-        // Preprocess nuclear channels for nuclei specifically:
-        NUCLEAR_PREPROCESS(ch_dna1, ch_dna2)
+        // // Preprocess nuclear channels for nuclei specifically:
+        // NUCLEAR_PREPROCESS(ch_dna1, ch_dna2)
 
-        // Segment nuclei with Unet++
-        NUCLEAR_SEGMENTATION(NUCLEAR_PREPROCESS.out.ch_preprocessed_nuclei, weights)
+        // // Segment nuclei with Unet++
+        // NUCLEAR_SEGMENTATION(NUCLEAR_PREPROCESS.out.ch_preprocessed_nuclei, weights)
         
-        // Dilate nuclear segmentation:
-        NUCLEAR_DILATION(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions)
+        // // Dilate nuclear segmentation:
+        // NUCLEAR_DILATION(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions)
 
-        // Join nuclear mask and segmentation stack and measure:
-        PREPROCESS_FULL_STACK.out.ch_preprocess_full_stack_dir
-            .join(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions, by: [0,1])
-            .set {ch_nuc_seg_stack}
+        // // Join nuclear mask and segmentation stack and measure:
+        // PREPROCESS_FULL_STACK.out.ch_preprocess_full_stack_dir
+        //     .join(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions, by: [0,1])
+        //     .set {ch_nuc_seg_stack}
 
-        // Join whole cell mask and segmentation stack and measure:
-        PREPROCESS_FULL_STACK.out.ch_preprocess_full_stack_dir
-            .join(NUCLEAR_DILATION.out.ch_nuclear_dilation, by: [0,1])
-            .set {ch_cell_seg_stack}
+        // // Join whole cell mask and segmentation stack and measure:
+        // PREPROCESS_FULL_STACK.out.ch_preprocess_full_stack_dir
+        //     .join(NUCLEAR_DILATION.out.ch_nuclear_dilation, by: [0,1])
+        //     .set {ch_cell_seg_stack}
 
-        // Run 'simple' measurement (non-cellprofiler) of intensity + other features:
-        DILATION_MEASURE(ch_nuc_seg_stack, 'nuclei.csv')
-        CELL_MEASURE(ch_cell_seg_stack, 'cells.csv')
+        // // Run 'simple' measurement (non-cellprofiler) of intensity + other features:
+        // DILATION_MEASURE(ch_nuc_seg_stack, 'nuclei.csv')
+        // CELL_MEASURE(ch_cell_seg_stack, 'cells.csv')
 
-        // Create pseudo H&E images from nuclear + other channels:
-        PSEUDO_HE(ch_dna1, ch_dna2, ch_Ru)
-  
+        // // Create pseudo H&E images from nuclear + other channels:
+        // PSEUDO_HE(ch_dna1, ch_dna2, ch_Ru)
+
 }

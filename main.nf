@@ -49,6 +49,7 @@ exit 1, "Input file not specified!"
 }
 
 if (params.metadata)             { ch_metadata = Channel.fromPath(params.metadata, checkIfExists: true) }                         else { exit 1, "Metadata csv file not specified!" }
+if (params.spillover_metadata)   { ch_spillover_metadata = Channel.fromPath(params.spillover_metadata, checkIfExists: true) }     else { exit 1, "Spillover Metadata csv file not specified!" }
 if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full stack cppipe file not specified!" }
 if (params.ilastik_stack_cppipe) { ch_ilastik_stack_cppipe = Channel.fromPath(params.ilastik_stack_cppipe, checkIfExists: true) } else { exit 1, "Ilastik stack cppipe file not specified!" }
 if (params.segmentation_cppipe)  { ch_segmentation_cppipe = Channel.fromPath(params.segmentation_cppipe, checkIfExists: true) }   else { exit 1, "CellProfiler segmentation cppipe file not specified!" }
@@ -86,6 +87,7 @@ full_stack_cppipe = ch_full_stack_cppipe.first()
 ilastik_stack_cppipe = ch_ilastik_stack_cppipe.first()
 segmentation_cppipe = ch_segmentation_cppipe.first()
 ch_metadata = ch_metadata.first()
+// metadata = ch_metadata.first()
 ch_nuclear_weights = ch_nuclear_weights.first()
 
 workflow {

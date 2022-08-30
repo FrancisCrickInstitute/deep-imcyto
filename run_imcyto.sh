@@ -9,16 +9,18 @@ export SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rubicon
 export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rubicon/inputs/containers/deep-imcyto'
 
 flowcytometry="/camp/stp/flowcytometry/data/labs/swantonc/outputs/Katey Enfield/InstrumentComparisons"
+# "${flowcytometry}/*/*/*After*.mcd"
 
 ## RUN PIPELINE
 nextflow run ./main.nf\
-    --input "${flowcytometry}/*/*/*After*.mcd"\
-    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_qc_gaschange_2'\
-    --metadata '/camp/project/proj-tracerx-lung/tctProjects/rubicon/qc/general/imc/qc_gaschange/outputs/nextflow/p2/metadata.csv'\
+    --input "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_tonsil_start_20190508/P1_tonsil_start_20190508.mcd"\
+    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_spillover_testing_2'\
+    --metadata '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/metadata/run_1_metadata.csv'\
+    --spillover_metadata '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/metadata/run_1_metadata_test.csv'\
     --full_stack_cppipe './assets/cppipes/full_stack_preprocessing.cppipe'\
     --segmentation_cppipe './assets/cppipes/segmentationP1.cppipe'\
     --ilastik_stack_cppipe './assets/cppipes/ilastik_stack_preprocessing.cppipe'\
-    --compensation_tiff './assets/spillover/P1_imc*.tiff'\
+    --compensation_tiff "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/spillover/P2_imc_sm_pixel_adaptive.tiff"\
     --plugins "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/plugins"\
     --skip_ilastik true \
     --email alastair.magness@crick.ac.uk\
@@ -29,8 +31,9 @@ nextflow run ./main.nf\
     --nuclear_weights_directory "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/weights"\
     --segmentation_type 'dilation'\
     --nuclear_dilation_radius 5\
+    --preprocess_method 'hotpixel'\
     -profile crick\
-    -resume
+    # -resume
 
 
 

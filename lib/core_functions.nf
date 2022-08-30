@@ -202,3 +202,41 @@ def group_channel(x){
                 .map { it -> [ it[0], it[1], it[2].sort() ] }
     return grouped
 }
+
+def get_fullstack_tuple(ArrayList channel) {
+    //gets [sample_id,roi_id,path_to_file] for single channels, allowing for mcd with single ROIs 
+    def sample = channel[0]
+    def file_list = channel[1]
+
+    if (file_list.getClass() == java.util.ArrayList) {
+
+        def new_array = []
+        for (int i=0; i<file_list.size(); i++) {
+            def item = []
+            item.add(sample)
+            // roi = file_list[i].getParent().getName()
+            item.add(file_list[i].getParent().getName())
+            item.add(file_list[i])
+            new_array.add(item)
+        }
+
+        return new_array
+    }
+    else {
+        def new_array = []
+        new_array.add(sample)
+        new_array.add(file_list.getParent().getName())
+        new_array.add(file_list)
+        return new_array
+    }
+    
+}
+
+def group_fullstack(x){
+    grouped = x.map { get_fullstack_tuple(it) }
+                .flatten()
+                .collate(3)
+                .groupTuple(by: [0,1])
+                .map { it -> [ it[0], it[1], it[2].sort() ] }
+    return grouped
+}

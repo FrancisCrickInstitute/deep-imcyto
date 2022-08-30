@@ -1,9 +1,12 @@
+#!/usr/bin/env python
+
+from locale import locale_encoding_alias
 import sys
 import argparse
 import skimage.io as io
 import pandas as pd
 import re
-import glob, os
+import glob, os, shutil
 import numpy as np
 import scipy.optimize as spo
 
@@ -55,7 +58,10 @@ def compensate_image_ls(img, sm, method):
 def main(args):
 
     metadata = pd.read_csv(args.metadata)
-    full_stack_paths = glob.glob(os.path.join(args.input_dir, f'*.{args.extension}'))
+    glob_path = os.path.join(args.input, f'*{args.extension}')
+    print(glob_path)
+    full_stack_paths = glob.glob(glob_path)
+    print(full_stack_paths)
     spillover_metals = metadata[metadata['spillover'] == 1]['metal'].values
     sm = io.imread(args.spillover_matrix)
 
@@ -70,6 +76,10 @@ def main(args):
         spillover_paths.append(path)
         label = os.path.basename(path)
         labels.append(label)
+        print(f'{metal} found in {path}')
+        print(label)
+
+    print(sm.shape, len(labels), len(spillover_paths))
 
     # read the spillvoer channels into a stack in isotope order
     spillover_channels = []
@@ -94,13 +104,25 @@ def main(args):
         spath = os.path.join(outdir, label)
         io.imsave(spath, comp_channel)
 
+    # copy remaining full_stack metals unchanged:
+    full_stack_metals = metadata[metadata['full_stack'] == 1]['metal'].values
+    remainder = set(full_stack_metals) - set(spillover_metals)
+    print(remainder)
+    for metal in remainder:
+        path = search_paths(full_stack_paths, metal)
+        img = io.imread(path)
+        img = np.squeeze(img)
+        fname = os.path.basename(path)
+        spath = os.path.join(outdir, fname)
+        io.imsave(spath, img)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Correct spillover of IMC images for Deep-imcyto')    
     parser.add_argument('--input', '-i', help='Input image directory', required=True)
     parser.add_argument('--outdir', '-o', help='Output image directory', required=True)
     parser.add_argument('--extension', '-e', help='file extension', default = '.tiff')
-    parser.add_argument('--spillover_matrix', '-sm', help='Spillover image directory', required=True)
+    parser.add_argument('--spillover_matrix', '-sm', help='Spillover image path', required=True)
     parser.add_argument('--metadata', help='Metadata file indicating which IMC channels require spillover', required=True)
     parser.add_argument('--method', help='"LS" or "NNLS";  Method for correcting spillover: LeastSquares or NonNegativeLeastSquares', default = 'NNLS')
     args = parser.parse_args()
