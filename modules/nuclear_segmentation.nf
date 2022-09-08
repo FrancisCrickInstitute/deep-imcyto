@@ -6,12 +6,12 @@ process NUCLEAR_PREPROCESS {
 
     tag "${name}.${roi}"
 
-    // executor "slurm"
-	// time "1h"
-	// clusterOptions "--part=gpu --gres=gpu:1"
+    executor "slurm"
+	time "1h"
+	clusterOptions "--part=gpu --gres=gpu:1"
 
-    module params.md_conda
-    conda params.dl_conda_env
+    // module params.md_conda
+    // conda params.dl_conda_env
 
     publishDir "${params.outdir}/nuclear_preprocess", mode: params.publish_dir_mode, overwrite: true
 
@@ -41,8 +41,9 @@ process NUCLEAR_SEGMENTATION {
 	time "1h"
 	clusterOptions "--part=gpu --gres=gpu:1"
 
-    module params.md_conda
-    conda params.dl_conda_env
+    // module params.md_conda
+    // conda params.dl_conda_env
+    module params.md_cuda
 
     publishDir "${params.outdir}/nuclear_segmentation", mode: params.publish_dir_mode, overwrite: true
  
