@@ -11,11 +11,12 @@ export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rub
 flowcytometry="/camp/stp/flowcytometry/data/labs/swantonc/outputs/Katey Enfield/InstrumentComparisons"
 # "${flowcytometry}/*/*/*After*.mcd"
 
+image="*.txt"
 ## RUN PIPELINE
 nextflow run ./main.nf\
-    --input "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_tonsil_start_20190508/P1_tonsil_start_20190508.mcd"\
-    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_spillover_testing_2'\
-    --metadata '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/metadata/run_1_metadata.csv'\
+    --input "/camp/project/proj-tracerx-lung/tctProjects/rubicon/qc/general/imc/qc_gaschange/inputs/txt/$image"\
+    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_txt_test'\
+    --metadata '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/metadata/metadata.csv'\
     --spillover_metadata '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/metadata/run_1_metadata_test.csv'\
     --full_stack_cppipe './assets/cppipes/full_stack_preprocessing.cppipe'\
     --segmentation_cppipe './assets/cppipes/segmentationP1.cppipe'\
@@ -29,7 +30,7 @@ nextflow run ./main.nf\
     --md_cuda "CUDA/10.2.89-GCC-8.3.0"\
     --md_conda "Anaconda3"\
     --nuclear_weights_directory "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/weights"\
-    --segmentation_type 'dilation'\
+    --segmentation_type 'QC'\
     --nuclear_dilation_radius 5\
     --preprocess_method 'hotpixel'\
     -profile crick\

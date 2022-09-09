@@ -32,7 +32,7 @@ args = argParser.parse_args()
 
 ## READ AND VALIDATE METADATA FILE
 ERROR_STR = 'ERROR: Please check metadata file'
-HEADER = ['metal', 'full_stack', 'ilastik_stack']
+HEADER = ['metal', 'full_stack', 'ilastik_stack', 'nuclear', 'spillover']
 
 fin = open(args.METADATA_FILE,'r')
 header = fin.readline().strip().split(',')
@@ -43,15 +43,15 @@ if header != HEADER:
 metalDict = {}
 for line in fin.readlines():
     lspl = line.strip().split(',')
-    metal,fstack,istack = lspl
+    metal,fstack,istack,nstack,spillstack = lspl
 
-    ## CHECK THREE COLUMNS IN LINE
+    ## CHECK FIVE COLUMNS IN LINE
     if len(lspl) != len(HEADER):
-        print("{}: Invalid number of columns - should be 3!\nLine: '{}'".format(ERROR_STR,line.strip()))
+        print("{}: Invalid number of columns - should be 5!\nLine: '{}'".format(ERROR_STR,line.strip()))
         sys.exit(1)
 
     ## CHECK VALID INCLUDE/EXCLUDE CODES
-    if fstack not in ['0','1'] or istack not in ['0','1']:
+    if fstack not in ['0','1'] or istack not in ['0','1'] or nstack not in ['0','1'] or spillstack not in ['0','1']:
         print("{}: Invalid column code - should be 0 or 1!\nLine: '{}'".format(ERROR_STR,line.strip()))
         sys.exit(1)
 
@@ -95,7 +95,7 @@ for roi_number in acids:
         # NO INFORMATION ON IMAGE ACQUISITION TIME FOR TXT AND TIFF FILE FORMATS
         roi_map.write("roi_%s,,," % (roi_number) + "\n")
 
-    for i,j in enumerate(HEADER[1:]):
+    for i,j in enumerate(HEADER[1:3]):
         ## WRITE TO APPROPRIATE DIRECTORY
         dirname = "roi_%s/%s" % (roi_number, j)
         if not os.path.exists(dirname):
