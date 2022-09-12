@@ -15,7 +15,7 @@ image="*.txt"
 ## RUN PIPELINE
 nextflow run ./main.nf\
     --input "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_tonsil_start_20190508/P1_tonsil_start_20190508.mcd"\
-    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_imctools_update_test'\
+    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_imctools_update_test_2'\
     --metadata '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/metadata/run_1_metadata_test.csv'\
     --full_stack_cppipe './assets/cppipes/full_stack_preprocessing.cppipe'\
     --segmentation_cppipe './assets/cppipes/segmentationP1.cppipe'\

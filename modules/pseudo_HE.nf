@@ -14,8 +14,7 @@ process PSEUDO_HE{
     publishDir "${params.outdir}/pseudo_HandE", mode: params.publish_dir_mode
 
     input:
-    tuple val(name), val(roi), path(dna1)
-    tuple val(name), val(roi), path(dna2)
+    tuple val(name), val(roi), path(dna1), path(dna2)
     tuple val(name), val(roi), path(ruth)
 
     output:
@@ -25,7 +24,7 @@ process PSEUDO_HE{
     script:
 
     """
-    makeHE.py -dna1 $dna1 -dna2 $dna2 -ruth $ruth --outdir ./ --imagename '$name-$roi'
+    makeHE.py -dna1 $dna1 -dna2 $dna2 --counterstain_dir $ruth --outdir ./ --imagename '$name-$roi'
     """
 
 }

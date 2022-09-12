@@ -32,7 +32,7 @@ args = argParser.parse_args()
 
 ## READ AND VALIDATE METADATA FILE
 ERROR_STR = 'ERROR: Please check metadata file'
-HEADER = ['metal', 'full_stack', 'ilastik_stack', 'nuclear', 'spillover']
+HEADER = ['metal', 'full_stack', 'ilastik_stack', 'nuclear', 'spillover', 'counterstain']
 
 fin = open(args.METADATA_FILE,'r')
 header = fin.readline().strip().split(',')
@@ -43,22 +43,22 @@ if header != HEADER:
 metalDict = {}
 for line in fin.readlines():
     lspl = line.strip().split(',')
-    metal,fstack,istack,nstack,spillstack = lspl
+    metal,fstack,istack,nstack,spillstack,cstainstack = lspl
 
     ## CHECK FIVE COLUMNS IN LINE
     if len(lspl) != len(HEADER):
-        print("{}: Invalid number of columns - should be 5!\nLine: '{}'".format(ERROR_STR,line.strip()))
+        print("{}: Invalid number of columns - should be 6!\nLine: '{}'".format(ERROR_STR,line.strip()))
         sys.exit(1)
 
     ## CHECK VALID INCLUDE/EXCLUDE CODES
-    if fstack not in ['0','1'] or istack not in ['0','1'] or nstack not in ['0','1'] or spillstack not in ['0','1']:
+    if fstack not in ['0','1'] or istack not in ['0','1'] or nstack not in ['0','1'] or spillstack not in ['0','1'] or cstainstack not in ['0','1']:
         print("{}: Invalid column code - should be 0 or 1!\nLine: '{}'".format(ERROR_STR,line.strip()))
         sys.exit(1)
 
     ## CREATE DICTIONARY
     metal = metal.upper()
     if metal not in metalDict:
-        metalDict[metal] = [bool(int(x)) for x in [fstack,istack,nstack,spillstack]]
+        metalDict[metal] = [bool(int(x)) for x in [fstack,istack,nstack,spillstack,cstainstack]]
 fin.close()
 
 ## OUTPUT FILE LINKING ROI IDS TO ROI LABELS (IMAGE DESCRIPTION)

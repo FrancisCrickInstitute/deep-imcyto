@@ -33,12 +33,13 @@ workflow DILATION_WF {
 
         // Group full stack files by sample and roi_id:
         ch_full_stack_mapped_tiff = group_channel(IMCTOOLS.out.ch_full_stack_tiff)
-        ch_dna1 = group_channel(IMCTOOLS.out.ch_dna1)
-        ch_dna2 = group_channel(IMCTOOLS.out.ch_dna2)
-        ch_Ru = group_channel(IMCTOOLS.out.ch_Ru)
+        // ch_dna1 = group_channel(IMCTOOLS.out.ch_dna1)
+        // ch_dna2 = group_channel(IMCTOOLS.out.ch_dna2)
+        // ch_Ru = group_channel(IMCTOOLS.out.ch_Ru)
         ch_dna_stack = group_channel(IMCTOOLS.out.ch_dna_stack_tiff)
         ch_dna_stack = ch_dna_stack.flatten().collate( 4 ).view()
         ch_full_stack_dir = group_fullstack(IMCTOOLS.out.ch_full_stack_dir)
+        ch_counterstain_dir = group_fullstack(IMCTOOLS.out.ch_counterstain_dir)
 
         // Perform spillover correction if required:
         if (params.compensation_tiff != false) {
@@ -109,7 +110,7 @@ workflow DILATION_WF {
         // DILATION_MEASURE(ch_nuc_seg_stack, 'nuclei.csv')
         // CELL_MEASURE(ch_cell_seg_stack, 'cells.csv')
 
-        // // Create pseudo H&E images from nuclear + other channels:
-        // PSEUDO_HE(ch_dna1, ch_dna2, ch_Ru)
+        // Create pseudo H&E images from nuclear + other channels:
+        PSEUDO_HE(ch_dna_stack, ch_counterstain_dir)
 
 }
