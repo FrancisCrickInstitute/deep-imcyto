@@ -36,25 +36,18 @@ workflow DILATION_WF {
         ch_dna1 = group_channel(IMCTOOLS.out.ch_dna1)
         ch_dna2 = group_channel(IMCTOOLS.out.ch_dna2)
         ch_Ru = group_channel(IMCTOOLS.out.ch_Ru)
-
-        IMCTOOLS.out.ch_full_stack_dir.view()
-
-        ch_full_stack_dir_mapped = group_fullstack(IMCTOOLS.out.ch_full_stack_dir)
-
-        println("\nch_full_stack_dir_mapped: ")
-        ch_full_stack_dir_mapped.view()
+        ch_dna_stack = group_channel(IMCTOOLS.out.ch_dna_stack_tiff)
+        ch_dna_stack = ch_dna_stack.flatten().collate( 4 ).view()
+        ch_full_stack_dir = group_fullstack(IMCTOOLS.out.ch_full_stack_dir)
 
         // Perform spillover correction if required:
         if (params.compensation_tiff != false) {
 
-            //Run PREPROCESS_FULL_STACK:
-            CORRECT_SPILLOVER(ch_full_stack_dir_mapped, metadata)
+            // Correct spillover of tiff channels specified in metadata file:
+            CORRECT_SPILLOVER(ch_full_stack_dir, metadata)
             
             // Group full stack files by sample and roi_id:
             ch_full_stack_mapped_tiff = group_channel(CORRECT_SPILLOVER.out.ch_spillover_comp_tiff)
-            // ch_dna1 = group_channel(CORRECT_SPILLOVER.out.ch_dna1)
-            // ch_dna2 = group_channel(CORRECT_SPILLOVER.out.ch_dna2)
-            // ch_Ru = group_channel(CORRECT_SPILLOVER.out.ch_Ru)
 
             // preprocess compensated channels with desired method:
             if (params.preprocess_method == 'cellprofiler') {
@@ -63,9 +56,6 @@ workflow DILATION_WF {
             }
             else if (params.preprocess_method == 'hotpixel') {
                 // Remove hot pixels:
-                // CORRECT_SPILLOVER.out.ch_comp_stack_dir.view()
-                // ch_comp_stack_dir_mapped = group_fullstack(CORRECT_SPILLOVER.out.ch_comp_stack_dir)
-                CORRECT_SPILLOVER.out.ch_comp_stack_dir.view()
                 REMOVE_HOTPIXELS(CORRECT_SPILLOVER.out.ch_comp_stack_dir, metadata)
             }
             else if (params.preprocess_method == 'none') {
@@ -96,8 +86,8 @@ workflow DILATION_WF {
 
 
         
-        // // Preprocess nuclear channels for nuclei specifically:
-        // NUCLEAR_PREPROCESS(ch_dna1, ch_dna2)
+        // Preprocess nuclear channels for nuclei specifically:
+        NUCLEAR_PREPROCESS(ch_dna_stack)
 
         // // Segment nuclei with Unet++
         // NUCLEAR_SEGMENTATION(NUCLEAR_PREPROCESS.out.ch_preprocessed_nuclei, weights)

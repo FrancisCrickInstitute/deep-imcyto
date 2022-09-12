@@ -58,9 +58,9 @@ metal,full_stack,ilastik_stack,nuclear,spillover
 175Lu,1,1,0,1
 176Yb,1,1,0,1
 190Pt,0,0,0,0
-191Ir,1,1,0,0
+191Ir,1,1,1,0
 192Pt,0,0,0,0
-193Ir,1,1,0,0
+193Ir,1,1,1,0
 194Pt,0,0,0,0
 195Pt,0,0,0,0
 196Pt,0,0,0,0

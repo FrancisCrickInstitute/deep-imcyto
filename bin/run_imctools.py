@@ -58,7 +58,7 @@ for line in fin.readlines():
     ## CREATE DICTIONARY
     metal = metal.upper()
     if metal not in metalDict:
-        metalDict[metal] = [bool(int(x)) for x in [fstack,istack]]
+        metalDict[metal] = [bool(int(x)) for x in [fstack,istack,nstack,spillstack]]
 fin.close()
 
 ## OUTPUT FILE LINKING ROI IDS TO ROI LABELS (IMAGE DESCRIPTION)
@@ -95,7 +95,8 @@ for roi_number in acids:
         # NO INFORMATION ON IMAGE ACQUISITION TIME FOR TXT AND TIFF FILE FORMATS
         roi_map.write("roi_%s,,," % (roi_number) + "\n")
 
-    for i,j in enumerate(HEADER[1:3]):
+    for i,j in enumerate(HEADER[1:]):
+        print(j)
         ## WRITE TO APPROPRIATE DIRECTORY
         dirname = "roi_%s/%s" % (roi_number, j)
         if not os.path.exists(dirname):
@@ -114,11 +115,14 @@ for roi_number in acids:
 
         for l, m in zip(imc_ac.channel_labels, imc_ac.channel_metals):
             filename = "%s.tiff" % (l)
+            print(m)
 
             # MATCH METAL LABEL TO METADATA METAL COLUMN
             metal_label = l.split('_')[0].upper()
             metal = [ entry for entry in metalDict if metal_label.upper().startswith(entry) and metalDict[entry][i] ]
+            print(metal)
             if len(metal) == 1:
+                print(metalDict[metal[0]][i])
                 if metalDict[metal[0]][i]:
                     img = imc_ac.get_image_writer(filename=os.path.join(dirname,filename), metals=[m])
                     img.save_image(mode='ome', compression=0, dtype=None, bigtiff=False)
