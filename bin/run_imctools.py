@@ -32,7 +32,7 @@ args = argParser.parse_args()
 
 ## READ AND VALIDATE METADATA FILE
 ERROR_STR = 'ERROR: Please check metadata file'
-HEADER = ['metal', 'full_stack', 'ilastik_stack']
+HEADER = ['metal', 'full_stack', 'ilastik_stack', 'nuclear', 'spillover', 'counterstain']
 
 fin = open(args.METADATA_FILE,'r')
 header = fin.readline().strip().split(',')
@@ -43,22 +43,22 @@ if header != HEADER:
 metalDict = {}
 for line in fin.readlines():
     lspl = line.strip().split(',')
-    metal,fstack,istack = lspl
+    metal,fstack,istack,nstack,spillstack,cstainstack = lspl
 
-    ## CHECK THREE COLUMNS IN LINE
+    ## CHECK FIVE COLUMNS IN LINE
     if len(lspl) != len(HEADER):
-        print("{}: Invalid number of columns - should be 3!\nLine: '{}'".format(ERROR_STR,line.strip()))
+        print("{}: Invalid number of columns - should be 6!\nLine: '{}'".format(ERROR_STR,line.strip()))
         sys.exit(1)
 
     ## CHECK VALID INCLUDE/EXCLUDE CODES
-    if fstack not in ['0','1'] or istack not in ['0','1']:
+    if fstack not in ['0','1'] or istack not in ['0','1'] or nstack not in ['0','1'] or spillstack not in ['0','1'] or cstainstack not in ['0','1']:
         print("{}: Invalid column code - should be 0 or 1!\nLine: '{}'".format(ERROR_STR,line.strip()))
         sys.exit(1)
 
     ## CREATE DICTIONARY
     metal = metal.upper()
     if metal not in metalDict:
-        metalDict[metal] = [bool(int(x)) for x in [fstack,istack]]
+        metalDict[metal] = [bool(int(x)) for x in [fstack,istack,nstack,spillstack,cstainstack]]
 fin.close()
 
 ## OUTPUT FILE LINKING ROI IDS TO ROI LABELS (IMAGE DESCRIPTION)
@@ -96,6 +96,7 @@ for roi_number in acids:
         roi_map.write("roi_%s,,," % (roi_number) + "\n")
 
     for i,j in enumerate(HEADER[1:]):
+        print(j)
         ## WRITE TO APPROPRIATE DIRECTORY
         dirname = "roi_%s/%s" % (roi_number, j)
         if not os.path.exists(dirname):
@@ -114,11 +115,14 @@ for roi_number in acids:
 
         for l, m in zip(imc_ac.channel_labels, imc_ac.channel_metals):
             filename = "%s.tiff" % (l)
+            print(m)
 
             # MATCH METAL LABEL TO METADATA METAL COLUMN
             metal_label = l.split('_')[0].upper()
             metal = [ entry for entry in metalDict if metal_label.upper().startswith(entry) and metalDict[entry][i] ]
+            print(metal)
             if len(metal) == 1:
+                print(metalDict[metal[0]][i])
                 if metalDict[metal[0]][i]:
                     img = imc_ac.get_image_writer(filename=os.path.join(dirname,filename), metals=[m])
                     img.save_image(mode='ome', compression=0, dtype=None, bigtiff=False)

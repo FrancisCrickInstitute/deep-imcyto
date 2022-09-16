@@ -11,16 +11,17 @@ export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rub
 flowcytometry="/camp/stp/flowcytometry/data/labs/swantonc/outputs/Katey Enfield/InstrumentComparisons"
 # "${flowcytometry}/*/*/*After*.mcd"
 
+# image="*.txt"
+image="P2_InstrumentComp_Aftergas_20220727_Sting_LungT_4_3_after_Sting_13.txt"
 ## RUN PIPELINE
 nextflow run ./main.nf\
-    --input "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_tonsil_start_20190508/P1_tonsil_start_20190508.mcd"\
-    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_spillover_testing_2'\
-    --metadata '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/metadata/run_1_metadata.csv'\
-    --spillover_metadata '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/metadata/run_1_metadata_test.csv'\
+    --input "/camp/project/proj-tracerx-lung/tctProjects/rubicon/qc/general/imc/qc_gaschange/inputs/txt/$image"\
+    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_imctools_update_test_2'\
+    --metadata '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/metadata/p2_gaschange_expanded_metadata.csv'\
     --full_stack_cppipe './assets/cppipes/full_stack_preprocessing.cppipe'\
     --segmentation_cppipe './assets/cppipes/segmentationP1.cppipe'\
     --ilastik_stack_cppipe './assets/cppipes/ilastik_stack_preprocessing.cppipe'\
-    --compensation_tiff "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/spillover/P2_imc_sm_pixel_adaptive.tiff"\
+    --compensation_tiff "/camp/project/proj-tracerx-lung/tctProjects/rubicon/qc/general/imc/spillover/inputs/peace_20211118/spillover_matrices/P2_sm_pixel_adaptive.tiff"\
     --plugins "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/plugins"\
     --skip_ilastik true \
     --email alastair.magness@crick.ac.uk\
@@ -51,8 +52,13 @@ nextflow run ./main.nf\
 # resultsdir = '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/results_dev_20220618_2'
 # "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_TMA_REC_20190508/P1_TMA_REC_20190508.mcd"
 # "/camp/lab/swantonc/inputs/flowcytometry/Tx100/TMA_REC/P1_tonsil*/*.mcd"
+# "/camp/project/proj-tracerx-lung/tctProjects/rubicon/qc/general/imc/qc_gaschange/inputs/txt/$image"\
 # './assets/cppipes/segmentationP1_CCS_median.cppipe'
 
 # When  we run this on all tx100 data with two metadata csvs, just run this command twice, specifying the two metadata csvs  with different filenames.
 # todo: genericise base config and add specific config for rubicon.; delete m_summary.py and m_summary.pyc; remove truth.py and truth.pyc
 # "consensus_il"
+
+# compensation tiffs:
+# tx100
+# "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/spillover/P2_imc_sm_pixel_adaptive.tiff"

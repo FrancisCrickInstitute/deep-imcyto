@@ -16,8 +16,7 @@ process NUCLEAR_PREPROCESS {
     publishDir "${params.outdir}/nuclear_preprocess", mode: params.publish_dir_mode, overwrite: true
 
     input:
-    tuple val(name), val(roi), path(dna1)
-    tuple val(name), val(roi), path(dna2)
+    tuple val(name), val(roi), path(dna1), path(dna2)
 
     output:
     tuple val(name), val(roi), path("*.png"), emit: ch_preprocessed_nuclei
