@@ -132,7 +132,7 @@ process PREPROCESS_ILASTIK_STACK {
 process CONSENSUS_CELL_SEGMENTATION {
 
     tag "${name}.${roi}"
-    label 'process_low'
+    label 'process_medium'
     publishDir "${params.outdir}/consensus_cell_segmentation/${name}/${roi}", mode: params.publish_dir_mode
 
     input:
@@ -165,7 +165,7 @@ process CONSENSUS_CELL_SEGMENTATION {
 process CONSENSUS_CELL_SEGMENTATION_ILASTIK_PP {
 
     tag "${name}.${roi}"
-    label 'process_low'
+    label 'process_medium'
     publishDir "${params.outdir}/consensus_cell_segmentation/${name}/${roi}", mode: params.publish_dir_mode
 
     input:
