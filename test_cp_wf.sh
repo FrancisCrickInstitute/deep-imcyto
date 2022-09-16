@@ -2,9 +2,8 @@
 
 ## LOAD MODULES
 ml purge
-ml Nextflow/22.04.0 #Nextflow/0.32.0 #19.04.0 #Nextflow/21.04.3 #Nextflow/21.04.0 # Nextflow/20.01.0
+ml Nextflow/22.04.0
 ml Singularity/3.6.4
-# ml Singularity/2.6.0-foss-2016b
 export SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rubicon/inputs/containers/deep-imcyto'
 export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rubicon/inputs/containers/deep-imcyto'
 
