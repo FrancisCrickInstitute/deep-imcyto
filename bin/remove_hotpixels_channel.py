@@ -46,6 +46,7 @@ def main(args):
         
         # read image and clip hot pixels:
         img = io.imread(path)
+        img = np.squeeze(img)
         fname = os.path.basename(path)
         print(f"processing image: {fname}")
         clipped = clip_hot_pixels(img, hp_filter_shape, hot_pixel_threshold)

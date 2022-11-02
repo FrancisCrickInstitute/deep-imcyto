@@ -15,6 +15,7 @@ def read_channels(paths):
         markername = os.path.splitext(os.path.split(p)[1])[0]
         markers.append(markername)
     stack = np.moveaxis(stack, 0, -1)
+    stack = np.squeeze(stack)
     return stack, markers
 
 def main(args):
@@ -23,7 +24,11 @@ def main(args):
 
     stack, markers = read_channels(full_stack_paths)
 
+    print("stack shape:", stack.shape)
+
     mask = io.imread(args.label_image_path)
+
+    print("mask shape:", mask.shape)
 
     properties = ['label', 'area', 'eccentricity', 'perimeter', 'mean_intensity']
     measurements = measure.regionprops_table(label_image=mask, 
