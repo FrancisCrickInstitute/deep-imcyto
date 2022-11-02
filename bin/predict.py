@@ -230,7 +230,7 @@ def main(CONFIG):
 
             # if any elements of the error array are greater than the error cutoff (==1), reprocess the regions that have this large error, else use this refinec mask as the final one:
             if np.any(error_img > 1):
-                mask_final = reprocess_unlikely_labels(mask_refined, error_img, boundary_im, nuc_im, com_im, CONFIG.THRESH_COM_LOW, CONFIG.THRESH_NUC, AE_weights, morph_scaler, randomise = False)
+                mask_final = reprocess_unlikely_labels(mask_refined, error_img, boundary_im, nuc_im, com_im, CONFIG.THRESH_COM_LOW, CONFIG.THRESH_NUC, AE_weights, morph_scaler, randomise = True)
             else:
                 mask_final = mask_refined
 
