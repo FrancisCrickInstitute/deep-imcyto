@@ -90,3 +90,105 @@ workflow NoCompHotPixel {
         PSEUDO_HE(ch_dna_stack, ch_counterstain_dir)
 
 }
+
+workflow NoCompCP {
+
+    take:
+        ch_full_stack_mapped_tiff
+        compensation
+        cppipe
+        plugins
+
+    main:
+            // Preprocess channels with a specified cppipe:
+        PREPROCESS_FULL_STACK(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe, plugins)
+        
+        // Join nuclear mask and segmentation stack and measure:
+        PREPROCESS_FULL_STACK.out.ch_preprocess_full_stack_dir
+            .join(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions, by: [0,1])
+            .set {ch_nuc_seg_stack}
+
+        // Join whole cell mask and segmentation stack and measure:
+        PREPROCESS_FULL_STACK.out.ch_preprocess_full_stack_dir
+            .join(NUCLEAR_DILATION.out.ch_nuclear_dilation, by: [0,1])
+            .set {ch_cell_seg_stack}
+}
+
+workflow CompHotPixel {
+
+    take:
+        ch_comp_stack_dir
+        ch_dna_stack
+        ch_counterstain_dir
+        weights
+        metadata
+
+    main:
+        // Remove hot pixels:
+        REMOVE_HOTPIXELS(ch_comp_stack_dir, metadata)
+
+        // Preprocess nuclear channels for nuclei specifically:
+        NUCLEAR_PREPROCESS(ch_dna_stack)
+
+        // Segment nuclei with Unet++
+        NUCLEAR_SEGMENTATION(NUCLEAR_PREPROCESS.out.ch_preprocessed_nuclei, weights)
+        
+        // Dilate nuclear segmentation:
+        NUCLEAR_DILATION(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions)
+
+        // Join nuclear mask and segmentation stack and measure:
+        REMOVE_HOTPIXELS.out.ch_hp_dir
+            .join(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions, by: [0,1])
+            .set {ch_nuc_seg_stack}
+
+        // Join whole cell mask and segmentation stack and measure:
+        REMOVE_HOTPIXELS.out.ch_hp_dir
+            .join(NUCLEAR_DILATION.out.ch_nuclear_dilation, by: [0,1])
+            .set {ch_cell_seg_stack}
+
+        // Run 'simple' measurement (non-cellprofiler) of intensity + other features:
+        DILATION_MEASURE(ch_nuc_seg_stack, 'nuclei.csv')
+        CELL_MEASURE(ch_cell_seg_stack, 'cells.csv')
+
+        // Create pseudo H&E images from nuclear + other channels:
+        PSEUDO_HE(ch_dna_stack, ch_counterstain_dir)
+
+}
+
+workflow CompNoPreprocess {
+
+    take:
+        ch_comp_stack_dir
+        ch_dna_stack
+        ch_counterstain_dir
+        weights
+        metadata
+
+    main:
+
+        // Preprocess nuclear channels for nuclei specifically:
+        NUCLEAR_PREPROCESS(ch_dna_stack)
+
+        // Segment nuclei with Unet++
+        NUCLEAR_SEGMENTATION(NUCLEAR_PREPROCESS.out.ch_preprocessed_nuclei, weights)
+        
+        // Dilate nuclear segmentation:
+        NUCLEAR_DILATION(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions)
+
+        // Join nuclear mask and segmentation stack and measure:
+        ch_comp_stack_dir
+            .join(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions, by: [0,1])
+            .set {ch_nuc_seg_stack}
+
+        // Join whole cell mask and segmentation stack and measure:
+        ch_comp_stack_dir
+            .join(NUCLEAR_DILATION.out.ch_nuclear_dilation, by: [0,1])
+            .set {ch_cell_seg_stack}
+
+        // Run 'simple' measurement (non-cellprofiler) of intensity + other features:
+        DILATION_MEASURE(ch_nuc_seg_stack, 'nuclei.csv')
+        CELL_MEASURE(ch_cell_seg_stack, 'cells.csv')
+
+        // Create pseudo H&E images from nuclear + other channels:
+        PSEUDO_HE(ch_dna_stack, ch_counterstain_dir)
+}

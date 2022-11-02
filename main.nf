@@ -49,9 +49,6 @@ exit 1, "Input file not specified!"
 }
 
 if (params.metadata)             { ch_metadata = Channel.fromPath(params.metadata, checkIfExists: true) }                         else { exit 1, "Metadata csv file not specified!" }
-if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full stack cppipe file not specified!" }
-if (params.ilastik_stack_cppipe) { ch_ilastik_stack_cppipe = Channel.fromPath(params.ilastik_stack_cppipe, checkIfExists: true) } else { exit 1, "Ilastik stack cppipe file not specified!" }
-if (params.segmentation_cppipe)  { ch_segmentation_cppipe = Channel.fromPath(params.segmentation_cppipe, checkIfExists: true) }   else { exit 1, "CellProfiler segmentation cppipe file not specified!" }
 if (params.nuclear_weights_directory) { ch_nuclear_weights = Channel.fromPath(params.nuclear_weights_directory, checkIfExists: true) } else { exit 1, "Nuclear weights directory not specified!" }
 
 if (!params.skip_ilastik) {
@@ -70,23 +67,22 @@ if (params.compensation_tiff) {
 }
 
 // Plugins required for CellProfiler
-Channel
-    .fromPath(params.plugins, type: 'dir' , checkIfExists: true)
-    .set { ch_cp_plugins }
+if (params.plugins) {
+    Channel
+        .fromPath(params.plugins, type: 'dir', checkIfExists: true)
+        .set { ch_plugins }
+} else {
+    Channel.empty().set { ch_plugins }
+}
 
 /*****************
 * BEGIN PIPELINE *
 *****************/
 
 // convert to value channels so that singular channels can be used in the pipeline multiple times without being consumed and halting the workflow:
-cp_plugins = ch_cp_plugins.first()
-cp_plugins.view()
+ch_plugins = ch_plugins.first()
 compensation = ch_compensation.first()
-full_stack_cppipe = ch_full_stack_cppipe.first()
-ilastik_stack_cppipe = ch_ilastik_stack_cppipe.first()
-segmentation_cppipe = ch_segmentation_cppipe.first()
 ch_metadata = ch_metadata.first()
-// metadata = ch_metadata.first()
 ch_nuclear_weights = ch_nuclear_weights.first()
 
 workflow {
@@ -97,13 +93,28 @@ workflow {
     ch_mcd.view()
 
     if (params.segmentation_type == 'dilation'){
-        DILATION_WF (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, cp_plugins )
+        if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else {Channel.empty().set { ch_full_stack_cppipe }}
+        full_stack_cppipe = ch_full_stack_cppipe.first()
+        DILATION_WF (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, ch_full_stack_cppipe, ch_plugins )
     }
     else if (params.segmentation_type == 'consensus'){
-        CONSENSUS_WF (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, segmentation_cppipe, cp_plugins )
+
+        if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full stack cppipe file not specified!" }
+        if (params.segmentation_cppipe)  { ch_segmentation_cppipe = Channel.fromPath(params.segmentation_cppipe, checkIfExists: true) }   else { exit 1, "CellProfiler segmentation cppipe file not specified!" }
+        full_stack_cppipe = ch_full_stack_cppipe.first()
+        segmentation_cppipe = ch_segmentation_cppipe.first()
+        CONSENSUS_WF (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, segmentation_cppipe, ch_plugins )
+
     }
     else if (params.segmentation_type == 'consensus_il'){
-        CONSENSUS_WF_ILASTIK_PP (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, ilastik_stack_cppipe, segmentation_cppipe, cp_plugins )
+
+        if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full stack cppipe file not specified!" }
+        if (params.ilastik_stack_cppipe) { ch_ilastik_stack_cppipe = Channel.fromPath(params.ilastik_stack_cppipe, checkIfExists: true) } else { exit 1, "Ilastik stack cppipe file not specified!" }
+        if (params.segmentation_cppipe)  { ch_segmentation_cppipe = Channel.fromPath(params.segmentation_cppipe, checkIfExists: true) }   else { exit 1, "CellProfiler segmentation cppipe file not specified!" }
+        full_stack_cppipe = ch_full_stack_cppipe.first()
+        ilastik_stack_cppipe = ch_ilastik_stack_cppipe.first()
+        segmentation_cppipe = ch_segmentation_cppipe.first()
+        CONSENSUS_WF_ILASTIK_PP (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, ilastik_stack_cppipe, segmentation_cppipe, ch_plugins )
     }
     else if (params.segmentation_type == 'QC'){
         MCD_QC (ch_mcd, ch_metadata)
