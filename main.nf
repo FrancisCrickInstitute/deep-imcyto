@@ -92,12 +92,12 @@ workflow {
 
     ch_mcd.view()
 
-    if (params.segmentation_type == 'dilation'){
+    if (params.segmentation_workflow == 'simple'){
         if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else {Channel.empty().set { ch_full_stack_cppipe }}
         full_stack_cppipe = ch_full_stack_cppipe.first()
         DILATION_WF (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, ch_full_stack_cppipe, ch_plugins )
     }
-    else if (params.segmentation_type == 'consensus'){
+    else if (params.segmentation_workflow == 'consensus'){
 
         if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full stack cppipe file not specified!" }
         if (params.segmentation_cppipe)  { ch_segmentation_cppipe = Channel.fromPath(params.segmentation_cppipe, checkIfExists: true) }   else { exit 1, "CellProfiler segmentation cppipe file not specified!" }
@@ -106,7 +106,7 @@ workflow {
         CONSENSUS_WF (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, segmentation_cppipe, ch_plugins )
 
     }
-    else if (params.segmentation_type == 'consensus_il'){
+    else if (params.segmentation_workflow == 'consensus_il'){
 
         if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full stack cppipe file not specified!" }
         if (params.ilastik_stack_cppipe) { ch_ilastik_stack_cppipe = Channel.fromPath(params.ilastik_stack_cppipe, checkIfExists: true) } else { exit 1, "Ilastik stack cppipe file not specified!" }
@@ -116,7 +116,7 @@ workflow {
         segmentation_cppipe = ch_segmentation_cppipe.first()
         CONSENSUS_WF_ILASTIK_PP (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, ilastik_stack_cppipe, segmentation_cppipe, ch_plugins )
     }
-    else if (params.segmentation_type == 'QC'){
+    else if (params.segmentation_workflow == 'QC'){
         MCD_QC (ch_mcd, ch_metadata)
     }
     else {

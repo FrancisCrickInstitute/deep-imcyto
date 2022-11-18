@@ -18,6 +18,20 @@ def read_channels(paths):
     stack = np.squeeze(stack)
     return stack, markers
 
+## Property function definitions:
+def median_intensity(regionmask, intensity):
+    return np.median(intensity[regionmask], axis=0)
+
+def std_intensity(regionmask, intensity):
+    return np.std(intensity[regionmask], axis=0)
+
+def rename_properties(df, prop, markers):
+    prop_named = [f'{prop}_'+ elem for elem in markers]
+    prop_numbered = [f'{prop}-{i}' for i in range(len(markers))]
+    rename_dict = dict(zip(prop_numbered,prop_named))
+    df = df.rename(columns=rename_dict)
+    return df
+
 def main(args):
 
     full_stack_paths = glob.glob(os.path.join(args.input_dir, '*.tiff'))
@@ -30,16 +44,20 @@ def main(args):
 
     print("mask shape:", mask.shape)
 
+    # measure properties for all regions of label image:
     properties = ['label', 'area', 'eccentricity', 'perimeter', 'mean_intensity']
     measurements = measure.regionprops_table(label_image=mask, 
                             intensity_image=stack, 
-                            properties=properties)
+                            properties=properties, 
+                            extra_properties=(median_intensity,std_intensity))
     measurements = pd.DataFrame(measurements)
     
-    intensity_named = ['mean_intensity_'+ elem for elem in markers]
-    intensity_numbered = [f'mean_intensity-{i}' for i in range(len(markers))]
-    rename_dict = dict(zip(intensity_numbered,intensity_named))
-    measurements = measurements.rename(columns=rename_dict)
+    # rename numeric columns to channel names:
+    measurements = rename_properties(measurements, 'mean_intensity', markers)
+    measurements = rename_properties(measurements, 'std_intensity', markers)
+    measurements = rename_properties(measurements, 'median_intensity', markers)
+    
+    # save measurements to csv:
     output_path = os.path.join(args.output_dir, args.output_file)
     measurements.to_csv(output_path, index=False)
     

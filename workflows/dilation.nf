@@ -35,6 +35,7 @@ workflow DILATION_WF {
         // Group full stack files by sample and roi_id:
         ch_full_stack_mapped_tiff = group_channel(IMCTOOLS.out.ch_full_stack_tiff)
         ch_dna_stack = group_channel(IMCTOOLS.out.ch_dna_stack_tiff)
+        ch_dna_stack = ch_dna_stack.flatten().collate( 4 )
         ch_full_stack_dir = group_fullstack(IMCTOOLS.out.ch_full_stack_dir)
         ch_counterstain_dir = group_fullstack(IMCTOOLS.out.ch_counterstain_dir)
 
