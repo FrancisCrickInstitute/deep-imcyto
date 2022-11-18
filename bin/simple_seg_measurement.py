@@ -45,12 +45,25 @@ def main(args):
     print("mask shape:", mask.shape)
 
     # measure properties for all regions of label image:
-    properties = ['label', 'area', 'eccentricity', 'perimeter', 'mean_intensity']
+    properties = ['label', 
+                'centroid', 
+                'area', 
+                'eccentricity', 
+                'solidity',
+                'perimeter', 
+                'minor_axis_length',
+                'major_axis_length',
+                'mean_intensity'] 
+
     measurements = measure.regionprops_table(label_image=mask, 
                             intensity_image=stack, 
                             properties=properties, 
                             extra_properties=(median_intensity,std_intensity))
     measurements = pd.DataFrame(measurements)
+    
+    # convert row,col centroids to x, y centroids:
+    measurements['centroid-x'] = measurements['centroid-1']
+    measurements['centroid-y'] =  measurements['centroid-0'].max() - measurements['centroid-0']
     
     # rename numeric columns to channel names:
     measurements = rename_properties(measurements, 'mean_intensity', markers)
