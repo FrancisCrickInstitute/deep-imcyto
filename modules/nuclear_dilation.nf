@@ -46,7 +46,7 @@ process DILATION_MEASURE {
     
     script:
         """
-        simple_seg_measurement.py --input_dir ${stack_dir} --output_dir . --label_image_path ${cellmask} --output_file ${outfile}
+        simple_seg_measurement.py --input_dir ${stack_dir} --output_dir . --label_image_path ${cellmask} --output_file ${outfile} --n_neighbours ${params.n_neighbours}
         """        
 }
 

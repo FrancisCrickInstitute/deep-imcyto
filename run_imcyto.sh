@@ -17,6 +17,7 @@ nextflow run ./main.nf\
     --segmentation_workflow 'simple'\
     --nuclear_dilation_radius 5\
     --preprocess_method 'hotpixel'\
+    --n_neighbours 5\
     -profile crick\
     -w '/camp/project/proj-tracerx-lung/txscratch/rubicon/deep_imcyto/work'\
     -resume
