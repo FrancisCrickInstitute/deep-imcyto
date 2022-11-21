@@ -43,6 +43,7 @@ process DILATION_MEASURE {
     
     output:
         path "*.csv"
+        path "*.png"
     
     script:
         """
