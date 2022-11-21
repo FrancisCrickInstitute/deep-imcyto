@@ -49,3 +49,28 @@ process DILATION_MEASURE {
         simple_seg_measurement.py --input_dir ${stack_dir} --output_dir . --label_image_path ${cellmask} --output_file ${outfile}
         """        
 }
+
+process OVERLAYS {
+    /*
+    * Make a pseudo-he image for each mcd file.
+    */
+    tag "${name}.${roi}"
+
+    publishDir "${params.outdir}/nuclear_dilation/${name}/${roi}", mode: params.publish_dir_mode
+
+    input:
+    tuple val(name), val(roi), path(overlay_image), path(nuc_mask), path(cell_mask) // from ch_preprocessed_nuclei
+    // tuple val(name), val(roi), path(nuc_mask), emit: ch_nuclear_predictions
+    // tuple val(name), val(roi), path(cell_mask), emit: ch_nuclear_dilation
+
+    output:
+    path "*.png", emit: ch_overlays
+    
+
+    script:
+
+    """
+    overlays.py --nuclear_segmentation ${nuc_mask} --cell_segmentation ${cell_mask} --image ${overlay_image} --outdir . --imagename '$name-$roi'
+    """
+
+}

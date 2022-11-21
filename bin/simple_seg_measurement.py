@@ -2,6 +2,7 @@
 
 import skimage.io as io
 import skimage.measure as measure
+from skimage.segmentation import clear_border
 import numpy as np
 import pandas as pd
 import os, glob, sys, argparse
@@ -41,6 +42,8 @@ def main(args):
     print("stack shape:", stack.shape)
 
     mask = io.imread(args.label_image_path)
+
+    mask = clear_border(mask)
 
     print("mask shape:", mask.shape)
 

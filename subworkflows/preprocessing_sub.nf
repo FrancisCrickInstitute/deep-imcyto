@@ -1,5 +1,5 @@
 include { NUCLEAR_PREPROCESS; NUCLEAR_SEGMENTATION } from '../modules/nuclear_segmentation.nf'
-include { NUCLEAR_DILATION; DILATION_MEASURE; DILATION_MEASURE as CELL_MEASURE } from '../modules/nuclear_dilation.nf'
+include { NUCLEAR_DILATION; OVERLAYS; DILATION_MEASURE; DILATION_MEASURE as CELL_MEASURE } from '../modules/nuclear_dilation.nf'
 include { PREPROCESS_FULL_STACK } from '../modules/cellprofiler_pp_seg.nf'
 include {PSEUDO_HE } from '../modules/pseudo_HE.nf'
 include {flatten_tiff ; get_roi_tuple; get_fullstack_tuple; group_channel; group_fullstack} from '../lib/core_functions.nf'
@@ -88,6 +88,19 @@ workflow NoCompHotPixel {
 
         // Create pseudo H&E images from nuclear + other channels:
         PSEUDO_HE(ch_dna_stack, ch_counterstain_dir)
+
+        // Join masks and nuc ikmages for segmentation overlay images:
+        NUCLEAR_PREPROCESS.out.ch_preprocessed_nuclei
+            .join(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions, by: [0,1])
+            .set {ch_seg_overlay}
+
+        ch_seg_overlay
+            .join(NUCLEAR_DILATION.out.ch_nuclear_dilation, by: [0,1])
+            .set {ch_seg_overlay}
+
+        ch_seg_overlay.view()
+
+        OVERLAYS(ch_seg_overlay)
 
 }
 

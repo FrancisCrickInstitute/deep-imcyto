@@ -9,7 +9,7 @@ export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rub
 
 ## RUN PIPELINE
 nextflow run ./main.nf\
-    --input "/camp/lab/swantonc/inputs/yunevam/Sharavan Venkateswaran/20210303_SV_HypM_azoVSveh_DESI_S2/20210303_SV_HypM_azoVSveh_DESI_S2.mcd"\
+    --input "/camp/lab/swantonc/inputs/yunevam/Sharavan Venkateswaran/20220513_Sharavan_WT_DESI/20220513_Sharavan_WT_DESI/20220513_Sharavan_WT_DESI.mcd"\
     --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_sharavan'\
     --metadata '/camp/project/proj-tracerx-lung/tctProjects/rubicon/non_rubicon_datasets/sharavan_venkateswaran/metadata/channel_metadata_deepimcyto.csv'\
     --email alastair.magness@crick.ac.uk\
@@ -19,7 +19,7 @@ nextflow run ./main.nf\
     --preprocess_method 'hotpixel'\
     -profile crick\
     -w '/camp/project/proj-tracerx-lung/txscratch/rubicon/deep_imcyto/work'\
-    # -resume
+    -resume
 
 # nextflow run ./main.nf\
 #     --input "/camp/project/proj-sahaie-swantonc/working/imc_segmentation/test_images/20220624_ZR_HypM_TMA/20220624_ZR_HypM_TMA.mcd"\
