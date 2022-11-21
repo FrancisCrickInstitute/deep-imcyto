@@ -7,10 +7,10 @@ ml Singularity/3.6.4
 
 export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rubicon/inputs/containers/deep-imcyto'
 
-## RUN PIPELINE
+## RUN PIPELINE: sharavan
 nextflow run ./main.nf\
     --input "/camp/lab/swantonc/inputs/yunevam/Sharavan Venkateswaran/20220513_Sharavan_WT_DESI/20220513_Sharavan_WT_DESI/20220513_Sharavan_WT_DESI.mcd"\
-    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_sharavan'\
+    --outdir '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/results_sharavan_imctools'\
     --metadata '/camp/project/proj-tracerx-lung/tctProjects/rubicon/non_rubicon_datasets/sharavan_venkateswaran/metadata/channel_metadata_deepimcyto.csv'\
     --email alastair.magness@crick.ac.uk\
     --nuclear_weights_directory "/camp/project/proj-sahaie-swantonc/working/imc_segmentation/src/weights"\

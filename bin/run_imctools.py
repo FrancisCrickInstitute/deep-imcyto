@@ -109,25 +109,27 @@ for roi_number in acids:
         if len(metal_stack) > 0:
             img = imc_ac.get_image_writer(filename=os.path.join("roi_%s" % (roi_number), "%s.ome.tiff" % j), metals=metal_stack)
             img.save_image(mode='ome', compression=0, dtype=None, bigtiff=True)
+
+            for l, m in zip(imc_ac.channel_labels, imc_ac.channel_metals):
+                filename = "%s.tiff" % (l)
+                print(m)
+
+                # MATCH METAL LABEL TO METADATA METAL COLUMN
+                metal_label = l.split('_')[0].upper()
+                metal = [ entry for entry in metalDict if metal_label.upper().startswith(entry) and metalDict[entry][i] ]
+                print(metal)
+                if len(metal) == 1:
+                    print(metalDict[metal[0]][i])
+                    if metalDict[metal[0]][i]:
+                        img = imc_ac.get_image_writer(filename=os.path.join(dirname,filename), metals=[m])
+                        img.save_image(mode='ome', compression=0, dtype=None, bigtiff=False)
+                elif len(metal) > 1:
+                    print("{} metal has multiple matches found".format(metal_label))
+                elif len([ entry for entry in metalDict if metal_label.upper().startswith(entry)]) == 0:
+                    print("{} metal does not exist in metasheet file".format(metal_label))
         else:
             print("None of the metals exists in metasheet file for {}".format(j))
-            sys.exit(1)
+            # sys.exit(1)
 
-        for l, m in zip(imc_ac.channel_labels, imc_ac.channel_metals):
-            filename = "%s.tiff" % (l)
-            print(m)
 
-            # MATCH METAL LABEL TO METADATA METAL COLUMN
-            metal_label = l.split('_')[0].upper()
-            metal = [ entry for entry in metalDict if metal_label.upper().startswith(entry) and metalDict[entry][i] ]
-            print(metal)
-            if len(metal) == 1:
-                print(metalDict[metal[0]][i])
-                if metalDict[metal[0]][i]:
-                    img = imc_ac.get_image_writer(filename=os.path.join(dirname,filename), metals=[m])
-                    img.save_image(mode='ome', compression=0, dtype=None, bigtiff=False)
-            elif len(metal) > 1:
-                print("{} metal has multiple matches found".format(metal_label))
-            elif len([ entry for entry in metalDict if metal_label.upper().startswith(entry)]) == 0:
-                print("{} metal does not exist in metasheet file".format(metal_label))
 roi_map.close()
