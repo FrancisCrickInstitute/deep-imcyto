@@ -9,9 +9,6 @@ process NUCLEAR_DILATION {
 
     publishDir "${params.outdir}/nuclear_dilation/${name}/${roi}", mode: params.publish_dir_mode
 
-    module params.md_conda
-    conda params.dl_conda_env
-
     input:
         tuple val(name), val(roi), path(mask) //from ch_preprocess_full_stack_tiff_dilation
 
@@ -33,9 +30,6 @@ process DILATION_MEASURE {
     clusterOptions "--part=gpu --gres=gpu:1"
     
     publishDir "${params.outdir}/nuclear_dilation/${name}/${roi}", mode: params.publish_dir_mode
-    
-    module params.md_conda
-    conda params.dl_conda_env
     
     input:
         tuple val(name), val(roi), path(stack_dir), path(cellmask) //from ch_preprocess_full_stack_tiff_dilation
@@ -60,9 +54,7 @@ process OVERLAYS {
     publishDir "${params.outdir}/nuclear_dilation/${name}/${roi}", mode: params.publish_dir_mode
 
     input:
-    tuple val(name), val(roi), path(overlay_image), path(nuc_mask), path(cell_mask) // from ch_preprocessed_nuclei
-    // tuple val(name), val(roi), path(nuc_mask), emit: ch_nuclear_predictions
-    // tuple val(name), val(roi), path(cell_mask), emit: ch_nuclear_dilation
+    tuple val(name), val(roi), path(overlay_image), path(nuc_mask), path(cell_mask)
 
     output:
     path "*.png", emit: ch_overlays

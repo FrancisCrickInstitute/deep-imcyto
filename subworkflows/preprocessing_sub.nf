@@ -98,8 +98,6 @@ workflow NoCompHotPixel {
             .join(NUCLEAR_DILATION.out.ch_nuclear_dilation, by: [0,1])
             .set {ch_seg_overlay}
 
-        ch_seg_overlay.view()
-
         OVERLAYS(ch_seg_overlay)
 
 }

@@ -10,7 +10,9 @@ def make_overlay(image, nuc, cell, nuc_bound, outdir, imagename):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    fig, ax=plt.subplots(1,1, dpi=300)
+    width = image.shape[1]
+    height = image.shape[0]
+    fig, ax = plt.subplots(1,1, dpi=1, figsize=(width, height))
     ax.imshow(image, cmap='gray')
     # ax.imshow(phe)
     ax.imshow(nuc, alpha=0.3, cmap='tab20', interpolation="nearest")

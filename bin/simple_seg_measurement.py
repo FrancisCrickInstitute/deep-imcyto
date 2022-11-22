@@ -58,14 +58,14 @@ def calc_neighbours(measurements, n_neighbours=5):
     nearest_neighbours = pd.merge(neighbour_df, distance_df,  left_index=True, right_index=True)
     return nearest_neighbours
 
-def plot_channels(measurements_norm, image_shape, marker_measurements, prop, outdir='.'):
-    nchannels = len(marker_measurements)
+def plot_channels(measurements_norm, image_shape, marker_measurements, prop, outdir='.', fname='Normalised cell marker intensity.png'):
     height, width = image_shape[0], image_shape[1]
     num =  width / height
     ncols  = 7
-    nrows = math.ceil(nchannels/7)
+    nrows = math.ceil(len(marker_measurements)/ncols)
+    scale = 5
     
-    fig = plt.figure(constrained_layout=True, figsize=(int(width/40),int(height/40)))
+    fig = plt.figure(constrained_layout=False, figsize=((scale * ncols * num),(scale * nrows)))
     gs = gridspec.GridSpec(nrows=nrows, ncols=ncols, figure=fig)
 
 
@@ -93,7 +93,9 @@ def plot_channels(measurements_norm, image_shape, marker_measurements, prop, out
                         fontsize=18, frameon=False, markerscale=5, scatterpoints=10)
     legend.get_title().set_fontsize('18') 
         
-    spath = os.path.join(outdir, f'normalised_marker_intensity_{prop}.png')
+    fname = fname + f"_normalised_{prop}_of_marker_intensity.png"
+    spath = os.path.join(outdir, fname)
+    plt.tight_layout()
     plt.savefig(spath, bbox_inches='tight')
 
 
@@ -150,22 +152,17 @@ def main(args):
     x_scaled = min_max_scaler.fit_transform(x)
     measurements_norm = measurements
     measurements_norm[mean_properties_ids] = x_scaled
-    plot_channels(measurements_norm, mask.shape, mean_properties_ids, 'mean', outdir='.')
+    fname, ext = os.path.splitext(args.output_file)
+    plot_channels(measurements_norm, mask.shape, mean_properties_ids, 'mean', outdir='.', fname=fname)
 
     x = measurements[std_properties_ids].values #returns a numpy array
     min_max_scaler = preprocessing.MinMaxScaler()
     x_scaled = min_max_scaler.fit_transform(x)
     measurements_norm = measurements
     measurements_norm[std_properties_ids] = x_scaled
-    plot_channels(measurements_norm, mask.shape, std_properties_ids, 'standard_deviation', outdir='.')
+    plot_channels(measurements_norm, mask.shape, std_properties_ids, 'standard_deviation', outdir='.', fname=fname)
 
-    x = measurements[median_properties_ids].values #returns a numpy array
-    min_max_scaler = preprocessing.MinMaxScaler()
-    x_scaled = min_max_scaler.fit_transform(x)
-    measurements_norm = measurements
-    measurements_norm[median_properties_ids] = x_scaled
-    plot_channels(measurements_norm, mask.shape, median_properties_ids, 'median', outdir='.')
-    
+    print('Done.')
 
 
 if __name__ == '__main__':
