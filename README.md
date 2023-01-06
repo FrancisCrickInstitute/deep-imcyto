@@ -17,13 +17,14 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 ## Pipeline summary
 
+deep-imcyto has three modes of operation: `QC`, `Simple segmentation` and `Multiplexed Consensus Cell Segmentation`, summarised in the diagram below.
+
 # ![deep-imcyto](docs/images/deep_imcyto_overview.png)
 
-deep-imcyto has three modes of operation: QC, Simple segmentation and Multiplexed Consensus Cell Segmentation, summarised in the diagram below.
 
 # QC mode
 
-deep-imcyto's QC mode is designed to provide quick access to individual channels in IMC data for quality control/review by splitting .mcd files into constituent channel images by imaged ROI.
+deep-imcyto's QC mode is designed to provide quick access to individual channels in IMC data for quality control and/or review by splitting .mcd files into constituent channel images by imaged ROI.
 
 # Segmentation options
 
