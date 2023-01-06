@@ -7,13 +7,11 @@
 
 ## Introduction
 
-**deep-imcyto** is a bioinformatics analysis pipeline for segmentation and other principal tasks in imaging mass cytometry data analysis. It is branched from **nfcore/imcyto**, a bioinformatics analysis pipeline developed by van Maldegem et al. for image segmentation and extraction of single cell expression data. 
+**deep-imcyto** is a bioinformatics analysis pipeline for segmentation and other principal tasks in imaging mass cytometry data analysis. It is branched from **nfcore/imcyto**, a bioinformatics analysis pipeline developed by van Maldegem et al. for image segmentation and extraction of single cell expression data. It can provide highly accurate cell segmentation of IMC images based on a U-net++ deep learning model as well as facilities for QC and image processing review. 
 
-**deep-imcyto** provides highly accurate segmentation of IMC images based on a U-net++ deep learning model. Predictions from this stage are used as the starting points for whole cell segmentation.
+<!-- This pipeline was generated for Imaging Mass Cytometry data, however, it is flexible enough to be applicable to other types of imaging data e.g. immunofluorescence/immunohistochemistry data. -->
 
-This pipeline was generated for Imaging Mass Cytometry data, however, it is flexible enough to be applicable to other types of imaging data e.g. immunofluorescence/immunohistochemistry data.
-
-The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
+deep-imcyto is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
 
 ## Pipeline summary
 
