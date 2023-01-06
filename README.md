@@ -24,7 +24,7 @@ deep-imcyto has three modes of operation: `QC`, `Simple segmentation` and `Multi
 
 # QC mode
 
-deep-imcyto's QC mode is designed to provide quick access to individual channels in IMC data for quality control and/or review by splitting .mcd files into constituent channel images by imaged ROI. If a particular preprocessing option is selected (e.g. `spillover correction`, `hotpixel removal` or the application of a custom set of preprocessing steps specified as a CellProfiler .cppipe file) then this preprocessing will be performed, as produced as an output of the QC run for manual review.
+deep-imcyto's QC mode is designed to provide quick access to individual channels in IMC data for quality control and/or review by splitting .mcd files into constituent channel images by imaged ROI. If a particular preprocessing option is selected (e.g. `spillover correction`, `hotpixel removal` or the application of a custom set of preprocessing steps specified as a CellProfiler `.cppipe` file) then this preprocessing will be performed, as produced as an output of the QC run for manual review.
 
 # Segmentation options
 
@@ -34,9 +34,9 @@ deep-imcyto's QC mode is designed to provide quick access to individual channels
 
 2. **Multiplexed consensus cell segmentation (MCCS)**
     
-    In MCCS mode a more accurate whole cell segmentation is performed following the multiplexed consensus cell segmentation principles.
+    In `MCCS` mode a more accurate whole cell segmentation is performed following the multiplexed consensus cell segmentation principles using nuclear predictions and progressive masking of specific marker channels (See [LINK TO PAPER] and [LINK TO READTHEDOCS]).
 
-
+# ![consensus](docs/images/consensus.png)
 
 
 # Summary
