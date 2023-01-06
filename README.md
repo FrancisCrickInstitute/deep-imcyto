@@ -19,6 +19,21 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 # ![deep-imcyto](docs/images/deep_imcyto_overview.png)
 
+deep-imcyto has three modes of operation: QC, Simple segmentation and Multiplexed Consensus Cell Segmentation, summarised in the diagram below.
+
+# Segmentation options
+
+1. Simple
+    In `simple` segmentation mode an approximation of whole cell segmentation is performed where accurate predicted nuclei are dilated by a user-defined number of pixels.
+
+2. Multiplexed consensus cell segmentation (MCCS)
+    In MCCS mode a more accurate whole cell segmentation is performed following the multiplexed consensus cell segmentation principles.
+
+
+
+
+# Summary
+
 1. Split image acquisition output files (`mcd`, `ome.tiff` or `txt`) by ROI and convert to individual `tiff` files for channels with names matching those defined in user-provided `metadata.csv` file. Full and ilastik stacks will be generated separately for all channels being analysed in single cell expression analysis, and for channels being used to generate the cell mask, respectively ([imctools](https://github.com/BodenmillerGroup/imctools)).
 
 2. Apply pre-processing filters to full stack `tiff` files ([CellProfiler](https://cellprofiler.org/)).
