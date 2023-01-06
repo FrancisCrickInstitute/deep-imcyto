@@ -24,7 +24,7 @@ deep-imcyto has three modes of operation: `QC`, `Simple segmentation` and `Multi
 
 # QC mode
 
-deep-imcyto's QC mode is designed to provide quick access to individual channels in IMC data for quality control and/or review by splitting .mcd files into constituent channel images by imaged ROI.
+deep-imcyto's QC mode is designed to provide quick access to individual channels in IMC data for quality control and/or review by splitting .mcd files into constituent channel images by imaged ROI. If a particular preprocessing option is selected (e.g. `spillover correction`, `hotpixel removal` or the application of a custom set of preprocessing steps specified as a CellProfiler .cppipe file) then this preprocessing will be performed, as produced as an output of the QC run for manual review.
 
 # Segmentation options
 
