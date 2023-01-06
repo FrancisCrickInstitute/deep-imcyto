@@ -24,9 +24,11 @@ deep-imcyto has three modes of operation: QC, Simple segmentation and Multiplexe
 # Segmentation options
 
 1. Simple
+    
     In `simple` segmentation mode an approximation of whole cell segmentation is performed where accurate predicted nuclei are dilated by a user-defined number of pixels.
 
 2. Multiplexed consensus cell segmentation (MCCS)
+    
     In MCCS mode a more accurate whole cell segmentation is performed following the multiplexed consensus cell segmentation principles.
 
 
