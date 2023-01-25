@@ -51,7 +51,7 @@ deep-imcyto's QC mode is designed to provide quick access to individual channels
 
 ## Quick Start
 
-deep-imcyto is designed with HPC systems in mind due to the large processing requirements of large scale IMC cohorts. However it may be run outside of this context, provided the user has access to a CUDA-enabled GPU.
+deep-imcyto is designed with HPC systems in mind due to the large processing requirements of large scale IMC cohorts. However it may be run outside of this context, provided the user has access to a CUDA-enabled GPU. To run deep-imcyto on your system with the test data, perform the following:
 
 i. Install [`nextflow`](https://nf-co.re/usage/installation)
 
