@@ -22,7 +22,7 @@ deep-imcyto has three modes of operation: `QC`, `Simple segmentation` and `Multi
 
 deep-imcyto's QC mode is designed to provide quick access to individual channels in IMC data for quality control and/or review by splitting .mcd files into constituent channel images by imaged ROI. If a particular preprocessing option is selected (e.g. `spillover correction`, `hotpixel removal` or the application of a custom set of preprocessing steps specified as a CellProfiler `.cppipe` file) then this preprocessing will be performed, as produced as an output of the QC run for manual review.
 
-# Segmentation options
+# Segmentation modes
 
 1. **Simple**
     
@@ -53,7 +53,17 @@ nextflow run nf-core/imcyto -profile test,<docker/singularity/institute>
 
 iv. Start running your own analysis!
 
-## Running deep-imcyto on an HPC system
+## Running deep-imcyto on an HPC system running SLURM
+
+    1. Clone the deep-imcyto repository.
+
+    2. Download both the deep-imcyto trained nucleus model weights and the example test dataset from our Zenodo repository (https://doi.org/10.5281/zenodo.7573269)
+
+    3. Unzip these `.zip` archives to an appropriate location respectively (total space required ~1GB)
+
+    4. Ensure your HPC system has `Nextflow/22.04.0` and `Singularity/3.6.4` installed.
+
+    5. 
 
 ```bash
 #!/bin/bash
@@ -72,7 +82,7 @@ nextflow run ./main.nf\
     --input "/path/to/test/dataset/*/*/*.tiff"\
     --outdir '../results'\
     --metadata 'assets/metadata/PHLEX_simple_segmentation_metadata_p1.csv'\
-    --email alastair.magness@crick.ac.uk\
+    --email your_email@your_institute.ac.uk\
     --nuclear_weights_directory "/path/to/weights/directory"\
     --segmentation_workflow 'simple'\
     --nuclear_dilation_radius 5\
