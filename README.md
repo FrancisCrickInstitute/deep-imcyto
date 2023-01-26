@@ -30,26 +30,14 @@ deep-imcyto's QC mode is designed to provide quick access to individual channels
 
 2. **Multiplexed consensus cell segmentation (MCCS)**
     
-    In `MCCS` mode a more accurate whole cell segmentation is performed following the multiplexed consensus cell segmentation principles using nuclear predictions and progressive masking of specific marker channels (See [LINK TO PAPER] and [LINK TO READTHEDOCS]). MCCS procedures are provided to the pipeline as a CellProfiler pipeline which
+    In `MCCS` mode a more accurate whole cell segmentation is performed following the multiplexed consensus cell segmentation principles using nuclear predictions and progressive masking of specific marker channels (See [LINK TO PAPER] and [LINK TO READTHEDOCS]). MCCS procedures are provided to deep-imcyto as a CellProfiler pipeline which is then executed in as parallel way as possible via Nextflow.
 
 # ![consensus](docs/images/consensus.png)
 
 
-# Summary
-
-<!-- 1. Split image acquisition output files (`mcd`, `ome.tiff` or `txt`) by ROI and convert to individual `tiff` files for channels with names matching those defined in user-provided `metadata.csv` file. Full and ilastik stacks will be generated separately for all channels being analysed in single cell expression analysis, and for channels being used to generate the cell mask, respectively ([imctools](https://github.com/BodenmillerGroup/imctools)).
-
-2. Apply pre-processing filters to full stack `tiff` files ([CellProfiler](https://cellprofiler.org/)).
-
-3. Use selected `tiff` files in ilastik stack to generate a composite RGB image representative of the plasma membranes and nuclei of all cells ([CellProfiler](https://cellprofiler.org/)).
-
-4. Use composite cell map to apply pixel classification for membranes, nuclei or background, and save probabilities map as `tiff` ([Ilastik](https://www.ilastik.org/)). If CellProfiler modules alone are deemed sufficient to achieve a reliable segmentation mask this step can be bypassed using the `--skip_ilastik` parameter in which case the composite `tiff` generated in step 3 will be used in subsequent steps instead.
-
-5. Use probability/composite `tiff` and pre-processed full stack `tiff` for segmentation to generate a single cell mask as `tiff`, and subsequently overlay cell mask onto full stack `tiff` to generate single cell expression data in `csv` file ([CellProfiler](https://cellprofiler.org/)). -->
-
 ## Quick Start
 
-deep-imcyto is designed with HPC systems in mind due to the large processing requirements of large scale IMC cohorts. However it may be run outside of this context, provided the user has access to a CUDA-enabled GPU. To run deep-imcyto on your system with the test data, perform the following:
+deep-imcyto is designed with HPC systems in mind due to the high processing requirements of large scale IMC cohorts. However it may be run outside of this context, provided the user has access to a CUDA-enabled GPU. To run deep-imcyto on your system with the test data, perform the following:
 
 i. Install [`nextflow`](https://nf-co.re/usage/installation)
 
@@ -65,15 +53,32 @@ nextflow run nf-core/imcyto -profile test,<docker/singularity/institute>
 
 iv. Start running your own analysis!
 
+## Running deep-imcyto on an HPC system
+
 ```bash
-nextflow run nf-core/imcyto \
-    --input "./inputs/*.mcd" \
-    --metadata './inputs/metadata.csv' \
-    --full_stack_cppipe './plugins/full_stack_preprocessing.cppipe' \
-    --ilastik_stack_cppipe './plugins/ilastik_stack_preprocessing.cppipe' \
-    --segmentation_cppipe './plugins/segmentation.cppipe' \
-    --ilastik_training_ilp './plugins/ilastik_training_params.ilp' \
-    --plugins './plugins/cp_plugins/' \
+#!/bin/bash
+
+## LOAD MODULES
+ml purge
+ml Nextflow/22.04.0
+ml Singularity/3.6.4
+
+# Define a folder on your system for the deep-imcyto software containers to be stored (space required ~10GB):
+export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rubicon/inputs/containers/deep-imcyto'
+
+
+# RUN DEEP-IMCYTO:
+nextflow run ./main.nf\
+    --input "/path/to/test/dataset/*/*/*.tiff"\
+    --outdir '../results'\
+    --metadata 'assets/metadata/PHLEX_simple_segmentation_metadata_p1.csv'\
+    --email alastair.magness@crick.ac.uk\
+    --nuclear_weights_directory "/path/to/weights/directory"\
+    --segmentation_workflow 'simple'\
+    --nuclear_dilation_radius 5\
+    --preprocess_method 'hotpixel'\
+    --n_neighbours 5\
+    -w '/path/to/work/directory/'\
     -profile <docker/singularity/institute>
 ```
 
@@ -97,7 +102,7 @@ nf-core/imcyto was originally written by [The Bioinformatics & Biostatistics Gro
 
 The pipeline was developed by [Harshil Patel](mailto:harshil.patel@crick.ac.uk) and [Nourdine Bah](mailto:nourdine.bah@crick.ac.uk) in collaboration with [Karishma Valand](mailto:karishma.valand@crick.ac.uk), [Febe van Maldegem](mailto:febe.vanmaldegem@crick.ac.uk), [Emma Colliver](mailto:emma.colliver@crick.ac.uk) and [Mihaela Angelova](mailto:mihaela.angelova@crick.ac.uk).
 
-Many thanks to others who contributed as a result of the Crick Data Challenge (Jan 2019) - Gavin Kelly, Becky Saunders, Katey Enfield, Alix Lemarois, Nuria Folguera Blasco, Andre Altmann.
+
 
 It would not have been possible to develop this pipeline without the guidelines, scripts and plugins provided by the [Bodenmiller Lab](http://www.bodenmillerlab.com/). Thank you too!
 
@@ -109,15 +114,7 @@ For further information or help, don't hesitate to get in touch on [Slack](https
 
 ## Citation
 
-If you use nf-core/imcyto for your analysis, please cite it using the following preprint:
 
-> **Characterisation of tumour microenvironment remodelling following oncogene inhibition in preclinical studies with imaging mass cytometry.**
->
-> Febe van Maldegem, Karishma Valand, Megan Cole, Harshil Patel, Mihaela Angelova, Sareena Rana, Emma Colliver, Katey Enfield, Nourdine Bah, Gavin Kelly, Victoria Siu Kwan Tsang, Edurne Mugarza, Christopher Moore, Philip Hobson, Dina Levi, Miriam Molina, Charles Swanton & Julian Downward.
-> 
-> Nat Commun. 2021 Oct 8;12(1):5906. doi: [10.1038/s41467-021-26214-x](https://doi.org/10.1038/s41467-021-26214-x)
-
-The Zenodo doi for the pipeline itself is: [10.5281/zenodo.3865430](https://doi.org/10.5281/zenodo.3865430)
 
 You can cite the `nf-core` publication as follows:
 
