@@ -35,7 +35,7 @@ deep-imcyto's QC mode is designed to provide quick access to individual channels
 # ![consensus](docs/images/consensus.png)
 
 
-## Quick Start
+<!-- ## Quick Start
 
 deep-imcyto is designed with HPC systems in mind due to the high processing requirements of large scale IMC cohorts. However it may be run outside of this context, provided the user has access to a CUDA-enabled GPU. To run deep-imcyto on your system with the test data, perform the following:
 
@@ -51,19 +51,19 @@ nextflow run nf-core/imcyto -profile test,<docker/singularity/institute>
 
 > Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
 
-iv. Start running your own analysis!
+iv. Start running your own analysis! -->
 
 ## Running deep-imcyto on an HPC system running SLURM
 
-    1. Clone the deep-imcyto repository.
 
-    2. Download both the deep-imcyto trained nucleus model weights and the example test dataset from our Zenodo repository (https://doi.org/10.5281/zenodo.7573269)
+1. Clone the deep-imcyto repository.
 
-    3. Unzip these `.zip` archives to an appropriate location respectively (total space required ~1GB)
+2. Download both the deep-imcyto trained nucleus model weights and the example test dataset from our Zenodo repository (https://doi.org/10.5281/zenodo.7573269)
 
-    4. Ensure your HPC system has `Nextflow/22.04.0` and `Singularity/3.6.4` installed.
+3. Unzip these `.zip` archives to an appropriate location respectively (total space required ~1GB)
 
-    5. 
+4. Ensure your HPC system has `Nextflow/22.04.0` and `Singularity/3.6.4` installed.
+
 
 ```bash
 #!/bin/bash
