@@ -81,7 +81,7 @@ else:
         sys.exit(1)
 
     # THERE IS ONLY ONE ACQUISITION - ROI FOLDER NAMED ACCORDING TO INPUT FILENAME
-    acids = [ re.sub('.txt|.tiff', '', os.path.basename(parser.filename).lower().replace(" ", "_")) ]
+    acids = [ re.sub('.txt|.tiff|.ome.tiff', '', os.path.basename(parser.filename).lower().replace(" ", "_")) ]
 
 for roi_number in acids:
     if file_type == "mcd":

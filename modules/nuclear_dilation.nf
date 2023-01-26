@@ -29,7 +29,7 @@ process DILATION_MEASURE {
     time "1h"
     clusterOptions "--part=gpu --gres=gpu:1"
     
-    publishDir "${params.outdir}/nuclear_dilation/${name}/${roi}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/simple_segmentation/${name}/${roi}", mode: params.publish_dir_mode
     
     input:
         tuple val(name), val(roi), path(stack_dir), path(cellmask) //from ch_preprocess_full_stack_tiff_dilation
@@ -51,7 +51,7 @@ process OVERLAYS {
     */
     tag "${name}.${roi}"
 
-    publishDir "${params.outdir}/nuclear_dilation/${name}/${roi}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/simple_segmentation/${name}/${roi}", mode: params.publish_dir_mode
 
     input:
     tuple val(name), val(roi), path(overlay_image), path(nuc_mask), path(cell_mask)

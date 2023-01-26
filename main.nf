@@ -39,11 +39,21 @@ ch_output_docs_images = file("$baseDir/docs/images/", checkIfExists: true)
 * Validate inputs
 */
 if (params.input) {
+    if (params.input.contains('.ome.tiff')){
+        println "OME-TIFF input detected"
     Channel
         .fromPath(params.input, checkIfExists: true)
-        .map { it -> [ it.name.take(it.name.lastIndexOf('.')), it ] }
+        .map { it -> [ it.name.take(it.name.replace('.ome', '').lastIndexOf('.')), it ] }
         .ifEmpty { exit 1, "Input file not found: ${params.input}" }
         .set { ch_mcd }
+
+    } else {
+    Channel
+        .fromPath(params.input, checkIfExists: true)
+        .map { it -> [ it.name.take(it.name.replace('.ome', '').lastIndexOf('.')), it ] }
+        .ifEmpty { exit 1, "Input file not found: ${params.input}" }
+        .set { ch_mcd }
+    }
 } else {
 exit 1, "Input file not specified!"
 }
