@@ -64,6 +64,11 @@ iv. Start running your own analysis! -->
 
 4. Ensure your HPC system has `Nextflow/22.04.0` and `Singularity/3.6.4` installed.
 
+5. Set your profile (see below)
+
+6. Edit the following script appropriately and run it from a compute node.
+
+> This will run deep-imcyto in `simple` segmentation mode.
 
 ```bash
 #!/bin/bash
@@ -74,13 +79,13 @@ ml Nextflow/22.04.0
 ml Singularity/3.6.4
 
 # Define a folder on your system for the deep-imcyto software containers to be stored (space required ~10GB):
-export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rubicon/inputs/containers/deep-imcyto'
+export NXF_SINGULARITY_CACHEDIR='/path/to/containers/deep-imcyto'
 
 
 # RUN DEEP-IMCYTO:
 nextflow run ./main.nf\
     --input "/path/to/test/dataset/*/*/*.tiff"\
-    --outdir '../results'\
+    --outdir '../results/simple'\
     --metadata 'assets/metadata/PHLEX_simple_segmentation_metadata_p1.csv'\
     --email your_email@your_institute.ac.uk\
     --nuclear_weights_directory "/path/to/weights/directory"\
@@ -88,6 +93,36 @@ nextflow run ./main.nf\
     --nuclear_dilation_radius 5\
     --preprocess_method 'hotpixel'\
     --n_neighbours 5\
+    -w '/path/to/work/directory/'\
+    -profile <docker/singularity/institute>
+```
+To run deep-imcyto in `MCCS` mode, run the following:
+
+```bash
+#!/bin/bash
+
+## LOAD MODULES
+ml purge
+ml Nextflow/22.04.0
+ml Singularity/3.6.4
+
+# Define a folder on your system for the deep-imcyto software containers to be stored (space required ~10GB):
+export NXF_SINGULARITY_CACHEDIR='/path/to/containers/deep-imcyto'
+
+
+# RUN DEEP-IMCYTO:
+nextflow run ./main.nf\
+    --input "/path/to/test/dataset/*/*/*.tiff"\
+    --outdir '../results/MCCS'\
+    --metadata 'assets/metadata/PHLEX_simple_segmentation_metadata_p1.csv'\
+    --email alastair.magness@crick.ac.uk\
+    --nuclear_weights_directory "/path/to/weights/directory"\
+    --segmentation_workflow 'MCCS'\
+    --full_stack_cppipe './assets/cppipes/full_stack_preprocessing.cppipe'\
+    --segmentation_cppipe './assets/cppipes/segmentationP1.cppipe'\
+    --mccs_stack_cppipe './assets/cppipes/mccs_stack_preprocessing.cppipe'\
+    --compensation_tiff './assets/spillover/P1_imc*.tiff'\
+    --plugins "./assets/plugins"\
     -w '/path/to/work/directory/'\
     -profile <docker/singularity/institute>
 ```

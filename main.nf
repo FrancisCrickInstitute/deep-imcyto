@@ -116,15 +116,15 @@ workflow {
         CONSENSUS_WF (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, segmentation_cppipe, ch_plugins )
 
     }
-    else if (params.segmentation_workflow == 'consensus_il'){
+    else if (params.segmentation_workflow == 'consensus_il' | params.segmentation_workflow == 'MCCS'){
 
         if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full stack cppipe file not specified!" }
-        if (params.ilastik_stack_cppipe) { ch_ilastik_stack_cppipe = Channel.fromPath(params.ilastik_stack_cppipe, checkIfExists: true) } else { exit 1, "Ilastik stack cppipe file not specified!" }
+        if (params.mccs_stack_cppipe) { ch_mccs_stack_cppipe = Channel.fromPath(params.mccs_stack_cppipe, checkIfExists: true) } else { exit 1, "Ilastik stack cppipe file not specified!" }
         if (params.segmentation_cppipe)  { ch_segmentation_cppipe = Channel.fromPath(params.segmentation_cppipe, checkIfExists: true) }   else { exit 1, "CellProfiler segmentation cppipe file not specified!" }
         full_stack_cppipe = ch_full_stack_cppipe.first()
-        ilastik_stack_cppipe = ch_ilastik_stack_cppipe.first()
+        mccs_stack_cppipe = ch_mccs_stack_cppipe.first()
         segmentation_cppipe = ch_segmentation_cppipe.first()
-        CONSENSUS_WF_ILASTIK_PP (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, ilastik_stack_cppipe, segmentation_cppipe, ch_plugins )
+        CONSENSUS_WF_ILASTIK_PP (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, mccs_stack_cppipe, segmentation_cppipe, ch_plugins )
     }
     else if (params.segmentation_workflow == 'QC'){
         MCD_QC (ch_mcd, ch_metadata)

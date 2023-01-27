@@ -21,7 +21,7 @@ Epilog = """Example usage: python run_imctools.py <MCD/TXT/TIFF> <METADATA_FILE>
 
 argParser = argparse.ArgumentParser(description=Description, epilog=Epilog)
 argParser.add_argument('INPUT_FILE', help="Input files with extension '.mcd', '.txt', or '.tiff'.")
-argParser.add_argument('METADATA_FILE', help="Metadata file containing 3 columns i.e. metal,full_stack,ilastik_stack. See pipeline usage docs for file format information.")
+argParser.add_argument('METADATA_FILE', help="Metadata file containing 3 columns i.e. metal,full_stack,mccs_stack. See pipeline usage docs for file format information.")
 args = argParser.parse_args()
 
 ############################################
@@ -32,7 +32,7 @@ args = argParser.parse_args()
 
 ## READ AND VALIDATE METADATA FILE
 ERROR_STR = 'ERROR: Please check metadata file'
-HEADER = ['metal', 'full_stack', 'ilastik_stack', 'nuclear', 'spillover', 'counterstain']
+HEADER = ['metal', 'full_stack', 'mccs_stack', 'nuclear', 'spillover', 'counterstain']
 
 fin = open(args.METADATA_FILE,'r')
 header = fin.readline().strip().split(',')

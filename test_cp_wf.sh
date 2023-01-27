@@ -15,7 +15,7 @@ nextflow run ./main.nf\
     --metadata '/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/metadata/run_1_metadata_test.csv'\
     --full_stack_cppipe './assets/cppipes/full_stack_preprocessing.cppipe'\
     --segmentation_cppipe './assets/cppipes/segmentationP1.cppipe'\
-    --ilastik_stack_cppipe './assets/cppipes/ilastik_stack_preprocessing.cppipe'\
+    --mccs_stack_cppipe './assets/cppipes/mccs_stack_preprocessing.cppipe'\
     --compensation_tiff "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/spillover/P1_imc_sm_pixel_adaptive.tiff"\
     --plugins "/camp/project/proj-tracerx-lung/tctProjects/rubicon/tracerx/tx100/imc/outputs/deep_imcyto/dsl2_testing/src/rubicon-deep-imcyto/assets/plugins"\
     --skip_ilastik true \

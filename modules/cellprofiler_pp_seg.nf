@@ -42,7 +42,7 @@ process PREPROCESS_FULL_STACK {
 /*
  * STEP 3: Preprocess Ilastik stack images with CellProfiler
  */
-process PREPROCESS_ILASTIK_STACK {
+process PREPROCESS_MCCS_STACK {
     tag "${name}.${roi}"
     label 'process_low'
     publishDir "${params.outdir}/channel_preprocess/${name}/${roi}", mode: params.publish_dir_mode
@@ -54,7 +54,7 @@ process PREPROCESS_ILASTIK_STACK {
     path plugin_dir
 
     output:
-    tuple val(name), val(roi), path("ilastik_stack/*"), emit: ch_preprocess_ilastik_stack_tiff
+    tuple val(name), val(roi), path("mccs_stack/*"), emit: ch_preprocess_mccs_stack_tiff
 
     script:
     """
@@ -64,7 +64,7 @@ process PREPROCESS_ILASTIK_STACK {
         --pipeline $cppipe \\
         --image-directory ./ \\
         --plugins-directory ./${plugin_dir} \\
-        --output-directory ./ilastik_stack \\
+        --output-directory ./mccs_stack \\
         --log-level DEBUG \\
         --temporary-directory ./tmp
     """
@@ -76,7 +76,7 @@ process PREPROCESS_ILASTIK_STACK {
 //  */
 // if (params.skip_ilastik) {
 //     ch_preprocess_full_stack_tiff
-//         .join(ch_preprocess_ilastik_stack_tiff, by: [0,1])
+//         .join(ch_preprocess_mccs_stack_tiff, by: [0,1])
 //         .map { it -> [ it[0], it[1], [ it[2], it[3] ].flatten().sort()] }
 //         .map { it -> it + [file("${params.nuclear_segdir}/p1/postprocess_predictions/${it[0]}-${it[1]}_nuclear_mask.tiff")] }
 //         .set { ch_preprocess_full_stack_tiff }
@@ -92,7 +92,7 @@ process PREPROCESS_ILASTIK_STACK {
 //                     }
 
 //         input:
-//         tuple val(name), val(roi), path(tiff) from ch_preprocess_ilastik_stack_tiff
+//         tuple val(name), val(roi), path(tiff) from ch_preprocess_mccs_stack_tiff
 //         path ilastik_training_ilp from ch_ilastik_training_ilp
 
 //         output:
