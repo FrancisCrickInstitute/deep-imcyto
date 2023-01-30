@@ -1,16 +1,12 @@
 process NUCLEAR_DILATION {
 
     tag "${name}.${roi}"
-    // label 'process_low'
+    label 'deep_imcyto_GPU'
 
-    executor "slurm"
-	time "1h"
-	clusterOptions "--part=gpu --gres=gpu:1"
-
-    publishDir "${params.outdir}/nuclear_dilation/${name}/${roi}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/simple_segmentation/${name}/${roi}", mode: params.publish_dir_mode
 
     input:
-        tuple val(name), val(roi), path(mask) //from ch_preprocess_full_stack_tiff_dilation
+        tuple val(name), val(roi), path(mask)
 
     output:
         tuple val(name), val(roi), path("*dilation.tiff"), emit: ch_nuclear_dilation
@@ -24,15 +20,12 @@ process NUCLEAR_DILATION {
 process DILATION_MEASURE {
 
     tag "${name}.${roi}"
-    // label 'process_low'
-    executor "slurm"
-    time "1h"
-    clusterOptions "--part=gpu --gres=gpu:1"
+    label 'deep_imcyto_GPU'
     
     publishDir "${params.outdir}/simple_segmentation/${name}/${roi}", mode: params.publish_dir_mode
     
     input:
-        tuple val(name), val(roi), path(stack_dir), path(cellmask) //from ch_preprocess_full_stack_tiff_dilation
+        tuple val(name), val(roi), path(stack_dir), path(cellmask)
         val outfile
     
     output:
@@ -50,6 +43,7 @@ process OVERLAYS {
     * Make a pseudo-he image for each mcd file.
     */
     tag "${name}.${roi}"
+    label 'deep_imcyto_local'
 
     publishDir "${params.outdir}/simple_segmentation/${name}/${roi}", mode: params.publish_dir_mode
 

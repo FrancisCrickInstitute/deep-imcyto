@@ -5,12 +5,8 @@
 process IMCTOOLS {
 
     tag "$name"
-    // label 'process_low' // 'process_medium'
-    
-    executor "local"
-    // executor "slurm"
-	// time "1h"
-	// clusterOptions "--part=gpu --gres=gpu:1"
+    label "short" // 'process_medium'
+
 
     publishDir "${params.outdir}/imctools/${name}", mode: params.publish_dir_mode,
         saveAs: { filename ->
@@ -46,22 +42,20 @@ process IMCTOOLS {
 
 
 
-process CORRECT_SPILLOVER {
+process CORRECT_SPILLOVER{
+    /*
+    * Correct isotope spillover.
+    */
 
     tag "$name-$roi"
-    // label 'process_low' // 'process_medium'
-    
-    // executor "local"
-    executor "slurm"
-	time "1h"
-	clusterOptions "--part=gpu --gres=gpu:1"
+    label "deep_imcyto_GPU"
 
     publishDir "${params.outdir}/channel_preprocessing/${name}/${roi}", mode: params.publish_dir_mode
 
     input:
-        tuple val(name), val(roi), path(full_stack_dir) //from ch_mcd
-        path metadata //from ch_metadata
-        // path sm
+        tuple val(name), val(roi), path(full_stack_dir)
+        path metadata
+    
 
     output:
         tuple val(name), val(roi), path("./spillover_compensated/*.tiff"), emit: ch_spillover_comp_tiff, optional: true
@@ -86,18 +80,13 @@ process CORRECT_SPILLOVER {
 process REMOVE_HOTPIXELS {
 
     tag "$name-$roi"
-    // label 'process_low' // 'process_medium'
-    
-    // executor "local"
-    executor "slurm"
-	time "1h"
-	clusterOptions "--part=gpu --gres=gpu:1"
+    label "deep_imcyto_GPU"
 
     publishDir "${params.outdir}/channel_preprocessing/${name}/${roi}", mode: params.publish_dir_mode
 
     input:
-        tuple val(name), val(roi), path(full_stack_dir) //from ch_mcd
-        path metadata //from ch_metadata
+        tuple val(name), val(roi), path(full_stack_dir)
+        path metadata
 
     output:
         tuple val(name), val(roi), path("./hotpixel_removed/*.tiff"), emit: ch_hp_tiff, optional: true
