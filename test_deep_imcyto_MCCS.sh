@@ -23,6 +23,7 @@ nextflow run ./main.nf\
     --mccs_stack_cppipe './assets/cppipes/mccs_stack_preprocessing.cppipe'\
     --compensation_tiff './assets/spillover/P1_imc*.tiff'\
     --plugins "./assets/plugins"\
+    --singularity_bind_path '/camp'\
     -profile crick\
     -w '/camp/project/proj-tracerx-lung/txscratch/rubicon/deep_imcyto/work'\
     # -resume

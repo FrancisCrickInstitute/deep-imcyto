@@ -11,6 +11,8 @@
 
 deep-imcyto is implemented in [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
 
+PHLEX is a consitutent component of the [TRACERx-PHLEX](https://github.com/FrancisCrickInstitute/TRACERx-PHLEX) pipeline for highly multiplexed imaging. Other components include TYPEx, for detailed cell phenotyping and Spatial-PHLEX for single cell spatial data analysis.
+
 ## Pipeline summary
 
 deep-imcyto has three modes of operation: `QC`, `Simple segmentation` and `Multiplexed Consensus Cell Segmentation`, summarised in the diagram below.
@@ -93,6 +95,7 @@ nextflow run ./main.nf\
     --nuclear_dilation_radius 5\
     --preprocess_method 'hotpixel'\
     --n_neighbours 5\
+    --singularity_bind_path '/camp'\
     -w '/path/to/work/directory/'\
     -profile <docker/singularity/institute>
 ```
@@ -123,6 +126,7 @@ nextflow run ./main.nf\
     --mccs_stack_cppipe './assets/cppipes/mccs_stack_preprocessing.cppipe'\
     --compensation_tiff './assets/spillover/P1_imc*.tiff'\
     --plugins "./assets/plugins"\
+    --singularity_bind_path '/camp'\
     -w '/path/to/work/directory/'\
     -profile <docker/singularity/institute>
 ```
@@ -142,6 +146,8 @@ The nf-core/imcyto pipeline comes with documentation about the pipeline, found i
 5. [Troubleshooting](https://nf-co.re/usage/troubleshooting)
 
 ## Credits
+
+deep-imcyto is primarily developed by [Alastair Magness](mailto:alastair.magness@crick.ac.uk) at [The Francis Crick Institute](https://www.crick.ac.uk).
 
 nf-core/imcyto was originally written by [The Bioinformatics & Biostatistics Group](https://www.crick.ac.uk/research/science-technology-platforms/bioinformatics-and-biostatistics/) for use at [The Francis Crick Institute](https://www.crick.ac.uk/), London.
 
