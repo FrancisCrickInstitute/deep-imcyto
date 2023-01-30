@@ -21,7 +21,6 @@ nextflow run ./main.nf\
     --nuclear_dilation_radius 5\
     --preprocess_method 'hotpixel'\
     --n_neighbours 5\
-    --singularity_bind_path '/camp'\
     -profile crick\
     -w '/camp/project/proj-tracerx-lung/txscratch/rubicon/deep_imcyto/work'\
-    # -resume
+    -resume

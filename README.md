@@ -11,7 +11,7 @@
 
 deep-imcyto is implemented in [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
 
-PHLEX is a consitutent component of the [TRACERx-PHLEX](https://github.com/FrancisCrickInstitute/TRACERx-PHLEX) pipeline for highly multiplexed imaging. Other components include TYPEx, for detailed cell phenotyping and Spatial-PHLEX for single cell spatial data analysis.
+**deep-imcyto** is a consitutent component of the [TRACERx-PHLEX](https://github.com/FrancisCrickInstitute/TRACERx-PHLEX) pipeline for highly multiplexed imaging. Other components include TYPEx, for detailed cell phenotyping and Spatial-PHLEX for single cell spatial data analysis.
 
 ## Pipeline summary
 
@@ -131,6 +131,8 @@ nextflow run ./main.nf\
     -profile <docker/singularity/institute>
 ```
 
+The variable `singularity_bind_path` tells deep-imcyto how to bind paths inside and outside the deep-imcyto Docker/Singularity container. If it is not explicitely set deep-imcyto attempts to use the root of the absolute path to the deepimcyto repository base directory [i.e. `/path` in `/path/to/deep-imcyto`].
+
 See [usage docs](docs/usage.md) for all of the available options when running the pipeline.
 
 ## Documentation
@@ -147,11 +149,9 @@ The nf-core/imcyto pipeline comes with documentation about the pipeline, found i
 
 ## Credits
 
-deep-imcyto is primarily developed by [Alastair Magness](mailto:alastair.magness@crick.ac.uk) at [The Francis Crick Institute](https://www.crick.ac.uk).
+deep-imcyto is primarily developed by [Alastair Magness](mailto:alastair.magness@crick.ac.uk) at [The Francis Crick Institute](https://www.crick.ac.uk). Other core contributors include [Emma Colliver](mailto:emma.colliver@crick.ac.uk), [Mihaela Angelova](mailto:mihaela.angelova@crick.ac.uk), and [Katey Enfield](katey.enfield@crick.ac.uk).
 
-nf-core/imcyto was originally written by [The Bioinformatics & Biostatistics Group](https://www.crick.ac.uk/research/science-technology-platforms/bioinformatics-and-biostatistics/) for use at [The Francis Crick Institute](https://www.crick.ac.uk/), London.
-
-The pipeline was developed by [Harshil Patel](mailto:harshil.patel@crick.ac.uk) and [Nourdine Bah](mailto:nourdine.bah@crick.ac.uk) in collaboration with [Karishma Valand](mailto:karishma.valand@crick.ac.uk), [Febe van Maldegem](mailto:febe.vanmaldegem@crick.ac.uk), [Emma Colliver](mailto:emma.colliver@crick.ac.uk) and [Mihaela Angelova](mailto:mihaela.angelova@crick.ac.uk).
+nf-core/imcyto was originally written by [The Bioinformatics & Biostatistics Group](https://www.crick.ac.uk/research/science-technology-platforms/bioinformatics-and-biostatistics/) for use at [The Francis Crick Institute](https://www.crick.ac.uk/), London. It was developed by [Harshil Patel](mailto:harshil.patel@crick.ac.uk) and [Nourdine Bah](mailto:nourdine.bah@crick.ac.uk) in collaboration with [Karishma Valand](mailto:karishma.valand@crick.ac.uk), [Febe van Maldegem](mailto:febe.vanmaldegem@crick.ac.uk) among others.
 
 
 
