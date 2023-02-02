@@ -10,10 +10,10 @@ ml Singularity/3.6.4
 export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rubicon/inputs/containers/deep-imcyto'
 
 
-# RUN PIPELINE: katey
+# RUN PIPELINE: test
 nextflow run ./main.nf\
     --input "/camp/project/proj-tracerx-lung/tctProjects/rubicon/PHLEX/release_testing/test_dataset/images/p1/*/*/*.tiff"\
-    --outdir '../results_simple_seg_metadata_p1_config_update_singularity_bind_path_param'\
+    --outdir '../results/deep-imcyto/simple_segmentation'\
     --metadata 'assets/metadata/PHLEX_simple_segmentation_metadata_p1.csv'\
     --email alastair.magness@crick.ac.uk\
     --nuclear_weights_directory "/camp/project/proj-sahaie-swantonc/working/imc_segmentation/src/weights"\

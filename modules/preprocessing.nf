@@ -8,9 +8,13 @@ process IMCTOOLS {
     label "short" // 'process_medium'
 
 
-    publishDir "${params.outdir}/imctools/${name}", mode: params.publish_dir_mode,
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/imctools/${name}", mode: params.publish_dir_mode,
         saveAs: { filename ->
                       if (filename.indexOf("version.txt") > 0) null
+                      else if (filename.endsWith(".ome.tiff") && (params.save_all_stacks == false)) null
+                      else if (filename.contains("spillover") && (params.save_all_stacks == false)) null
+                      else if (filename.contains("nuclear") && (params.save_all_stacks == false)) null
+                      else if (filename.contains("counterstain") && (params.save_all_stacks == false)) null
                       else filename
                 }
 
@@ -34,10 +38,10 @@ process IMCTOOLS {
         val "${params.outdir}/imctools", emit: ch_imctoolsdir
 
     script: // This script is bundled with the pipeline, in nf-core/imcyto/bin/
-    """
-    run_imctools.py $mcd $metadata
-    pip show imctools | grep "Version" > imctools_version.txt
-    """
+        """
+        run_imctools.py $mcd $metadata ${params.save_all_stacks}
+        pip show imctools | grep "Version" > imctools_version.txt
+        """
 }
 
 
@@ -50,7 +54,7 @@ process CORRECT_SPILLOVER{
     tag "$name-$roi"
     label "deep_imcyto_GPU"
 
-    publishDir "${params.outdir}/channel_preprocessing/${name}/${roi}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/channel_preprocessing/${name}/${roi}", mode: params.publish_dir_mode, enabled: params.save_all_stacks
 
     input:
         tuple val(name), val(roi), path(full_stack_dir)
@@ -82,7 +86,7 @@ process REMOVE_HOTPIXELS {
     tag "$name-$roi"
     label "deep_imcyto_GPU"
 
-    publishDir "${params.outdir}/channel_preprocessing/${name}/${roi}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/channel_preprocessing/${name}/${roi}", mode: params.publish_dir_mode, enabled: params.save_all_stacks
 
     input:
         tuple val(name), val(roi), path(full_stack_dir)

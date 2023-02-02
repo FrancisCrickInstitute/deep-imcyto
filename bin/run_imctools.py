@@ -22,6 +22,7 @@ Epilog = """Example usage: python run_imctools.py <MCD/TXT/TIFF> <METADATA_FILE>
 argParser = argparse.ArgumentParser(description=Description, epilog=Epilog)
 argParser.add_argument('INPUT_FILE', help="Input files with extension '.mcd', '.txt', or '.tiff'.")
 argParser.add_argument('METADATA_FILE', help="Metadata file containing 3 columns i.e. metal,full_stack,mccs_stack. See pipeline usage docs for file format information.")
+argParser.add_argument('SAVE_STACKS', help="Save stacks as tiff files", type=bool, default=False)
 args = argParser.parse_args()
 
 ############################################
@@ -107,8 +108,10 @@ for roi_number in acids:
         metal_stack = [ imc_ac.channel_metals[idx] for idx in label_indices ]
 
         if len(metal_stack) > 0:
-            img = imc_ac.get_image_writer(filename=os.path.join("roi_%s" % (roi_number), "%s.ome.tiff" % j), metals=metal_stack)
-            img.save_image(mode='ome', compression=0, dtype=None, bigtiff=True)
+
+            if args.SAVE_STACKS:
+                img = imc_ac.get_image_writer(filename=os.path.join("roi_%s" % (roi_number), "%s.ome.tiff" % j), metals=metal_stack)
+                img.save_image(mode='ome', compression=0, dtype=None, bigtiff=True)
 
             for l, m in zip(imc_ac.channel_labels, imc_ac.channel_metals):
                 filename = "%s.tiff" % (l)

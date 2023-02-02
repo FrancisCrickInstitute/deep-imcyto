@@ -7,7 +7,7 @@ process NUCLEAR_PREPROCESS {
     tag "${name}.${roi}"
     label 'deep_imcyto_GPU'
 
-    publishDir "${params.outdir}/nuclear_preprocess", mode: params.publish_dir_mode, overwrite: true
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/nuclear_preprocess", mode: params.publish_dir_mode, overwrite: true
 
     input:
     tuple val(name), val(roi), path(dna1), path(dna2)
@@ -31,7 +31,7 @@ process NUCLEAR_SEGMENTATION {
     tag "${name}.${roi}"
     label 'deep_imcyto_GPU'
 
-    publishDir "${params.outdir}/nuclear_segmentation", mode: params.publish_dir_mode, overwrite: true
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/nuclear_segmentation", mode: params.publish_dir_mode, overwrite: true
 
     input:
     tuple val(name), val(roi), path(preprocessed_image)

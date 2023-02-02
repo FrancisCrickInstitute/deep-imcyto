@@ -3,7 +3,7 @@ process NUCLEAR_DILATION {
     tag "${name}.${roi}"
     label 'deep_imcyto_GPU'
 
-    publishDir "${params.outdir}/simple_segmentation/${name}/${roi}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/simple_segmentation/${name}/${roi}", mode: params.publish_dir_mode
 
     input:
         tuple val(name), val(roi), path(mask)
@@ -22,7 +22,7 @@ process DILATION_MEASURE {
     tag "${name}.${roi}"
     label 'deep_imcyto_GPU'
     
-    publishDir "${params.outdir}/simple_segmentation/${name}/${roi}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/simple_segmentation/${name}/${roi}", mode: params.publish_dir_mode
     
     input:
         tuple val(name), val(roi), path(stack_dir), path(cellmask)
@@ -45,7 +45,7 @@ process OVERLAYS {
     tag "${name}.${roi}"
     label 'deep_imcyto_local'
 
-    publishDir "${params.outdir}/simple_segmentation/${name}/${roi}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/simple_segmentation/${name}/${roi}", mode: params.publish_dir_mode
 
     input:
     tuple val(name), val(roi), path(overlay_image), path(nuc_mask), path(cell_mask)

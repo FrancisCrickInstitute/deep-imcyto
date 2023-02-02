@@ -135,6 +135,15 @@ The variable `singularity_bind_path` tells deep-imcyto how to bind paths inside 
 
 See [usage docs](docs/usage.md) for all of the available options when running the pipeline.
 
+## Container
+deep-imcyto runs inside a customised Docker container built on top of the [rapids-22.02-cuda11.0-base-ubuntu18.04-py3.8](https://hub.docker.com/r/rapidsai/rapidsai/) Docker container for reproducible GPU-accelerated data science. Important prerequisites for the RAPIDS are as follows:
+
+- NVIDIA Pascal™ GPU architecture or better
+- CUDA 11.2/11.4/11.5 with a compatible NVIDIA driver
+- nvidia-container-toolkit
+
+See [RAPIDS](https://hub.docker.com/r/rapidsai/rapidsai/) for more information.
+
 ## Documentation
 
 The nf-core/imcyto pipeline comes with documentation about the pipeline, found in the `docs/` directory:

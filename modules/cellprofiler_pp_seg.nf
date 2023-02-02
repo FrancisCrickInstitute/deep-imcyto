@@ -5,7 +5,7 @@ process PREPROCESS_FULL_STACK {
 
     tag "${name}.${roi}"
     label 'process_low'
-    publishDir "${params.outdir}/channel_preprocess/${name}/${roi}", mode: params.publish_dir_mode,
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/channel_preprocess/${name}/${roi}", mode: params.publish_dir_mode,
         saveAs: { filename ->
                       if (filename.indexOf("version.txt") > 0) null
                       else filename
@@ -45,7 +45,7 @@ process PREPROCESS_FULL_STACK {
 process PREPROCESS_MCCS_STACK {
     tag "${name}.${roi}"
     label 'process_low'
-    publishDir "${params.outdir}/channel_preprocess/${name}/${roi}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/channel_preprocess/${name}/${roi}", mode: params.publish_dir_mode
 
     input:
     tuple val(name), val(roi), path(tiff)
@@ -85,7 +85,7 @@ process PREPROCESS_MCCS_STACK {
 //     process ILASTIK {
 //         tag "${name}.${roi}"
 //         label 'process_medium'
-//         publishDir "${params.outdir}/ilastik/${name}/${roi}", mode: params.publish_dir_mode,
+//         publishDir "${params.outdir}/deep-imcyto/${params.release}/ilastik/${name}/${roi}", mode: params.publish_dir_mode,
 //             saveAs: { filename ->
 //                           if (filename.indexOf("version.txt") > 0) null
 //                           else filename
@@ -133,7 +133,7 @@ process CONSENSUS_CELL_SEGMENTATION {
 
     tag "${name}.${roi}"
     label 'process_medium'
-    publishDir "${params.outdir}/consensus_cell_segmentation/${name}/${roi}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/consensus_cell_segmentation/${name}/${roi}", mode: params.publish_dir_mode
 
     input:
     tuple val(name), val(roi), path(tiff), path(mask)
@@ -166,7 +166,7 @@ process CONSENSUS_CELL_SEGMENTATION_ILASTIK_PP {
 
     tag "${name}.${roi}"
     label 'process_medium'
-    publishDir "${params.outdir}/consensus_cell_segmentation/${name}/${roi}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/consensus_cell_segmentation/${name}/${roi}", mode: params.publish_dir_mode
 
     input:
     tuple val(name), val(roi), path(tiff), path(pp_tiffs),path(mask)

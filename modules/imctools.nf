@@ -12,7 +12,7 @@ process IMCTOOLS {
 	// time "1h"
 	// clusterOptions "--part=gpu --gres=gpu:1"
 
-    publishDir "${params.outdir}/imctools/${name}", mode: params.publish_dir_mode,
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/imctools/${name}", mode: params.publish_dir_mode,
         saveAs: { filename ->
                       if (filename.indexOf("version.txt") > 0) null
                       else filename

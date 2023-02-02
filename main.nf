@@ -100,8 +100,6 @@ workflow {
     print_logo()
     check_params()
 
-    ch_mcd.view()
-
     if (params.segmentation_workflow == 'simple'){
         if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else {Channel.empty().set { ch_full_stack_cppipe }}
         full_stack_cppipe = ch_full_stack_cppipe.first()
