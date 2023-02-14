@@ -15,7 +15,7 @@ include { helpMessage; parseInputs;
            } from './lib/core_functions.nf'
 
 include { DILATION_WF } from './workflows/dilation.nf'
-include { CONSENSUS_WF; CONSENSUS_WF_ILASTIK_PP } from './workflows/CCS.nf'
+include { CONSENSUS_WF; CONSENSUS_WF_MCCS_PP } from './workflows/CCS.nf'
 include { MCD_QC } from './workflows/QC.nf'
 include { check_params; print_logo } from './modules/util.nf'
 
@@ -122,7 +122,7 @@ workflow {
         full_stack_cppipe = ch_full_stack_cppipe.first()
         mccs_stack_cppipe = ch_mccs_stack_cppipe.first()
         segmentation_cppipe = ch_segmentation_cppipe.first()
-        CONSENSUS_WF_ILASTIK_PP (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, mccs_stack_cppipe, segmentation_cppipe, ch_plugins )
+        CONSENSUS_WF_MCCS_PP (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, mccs_stack_cppipe, segmentation_cppipe, ch_plugins )
     }
     else if (params.segmentation_workflow == 'QC'){
         MCD_QC (ch_mcd, ch_metadata)

@@ -1,7 +1,7 @@
 include { NUCLEAR_PREPROCESS; NUCLEAR_SEGMENTATION } from '../modules/nuclear_segmentation.nf'
 include { NUCLEAR_DILATION } from '../modules/nuclear_dilation.nf'
 include { IMCTOOLS } from '../modules/imctools.nf'
-include { PREPROCESS_FULL_STACK; CONSENSUS_CELL_SEGMENTATION; PREPROCESS_MCCS_STACK; CONSENSUS_CELL_SEGMENTATION_ILASTIK_PP } from '../modules/cellprofiler_pp_seg.nf'
+include { PREPROCESS_FULL_STACK; CONSENSUS_CELL_SEGMENTATION; PREPROCESS_MCCS_STACK; CONSENSUS_CELL_SEGMENTATION_MCCS_PP } from '../modules/cellprofiler_pp_seg.nf'
 include {PSEUDO_HE } from '../modules/pseudo_HE.nf'
 include {flatten_tiff ; get_roi_tuple ; group_channel} from '../lib/core_functions.nf'
 
@@ -49,7 +49,7 @@ workflow CONSENSUS_WF {
   
 }
 
-workflow CONSENSUS_WF_ILASTIK_PP {
+workflow CONSENSUS_WF_MCCS_PP {
 
     /*
     * The consensus cell segmentation workflow.
@@ -76,14 +76,20 @@ workflow CONSENSUS_WF_ILASTIK_PP {
         ch_dna2 = group_channel(IMCTOOLS.out.ch_dna2)
         ch_Ru = group_channel(IMCTOOLS.out.ch_Ru)
 
+        ch_dna_stack = group_channel(IMCTOOLS.out.ch_dna_stack_tiff)
+        ch_dna_stack = ch_dna_stack.flatten().collate( 4 )
+
 
         // Run Preprocessing on Full Stack, Ilastik stack and nuclear channels for unet++ segmentation:
         PREPROCESS_FULL_STACK(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe_full_stack, plugins)
         PREPROCESS_MCCS_STACK(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe_mccs_stack, plugins)
-        NUCLEAR_PREPROCESS(ch_dna1, ch_dna2)
+        // NUCLEAR_PREPROCESS(ch_dna1, ch_dna2)
 
-        // Make Pseudo H&E:
-        PSEUDO_HE(ch_dna1, ch_dna2, ch_Ru)
+        // Preprocess nuclear channels for nuclei specifically:
+        NUCLEAR_PREPROCESS(ch_dna_stack)
+
+        // Create pseudo H&E images from nuclear + other channels:
+        PSEUDO_HE(ch_dna_stack, ch_counterstain_dir)
 
         // Run Nuclear Segmentation:
         NUCLEAR_SEGMENTATION(NUCLEAR_PREPROCESS.out.ch_preprocessed_nuclei, weights)
@@ -95,6 +101,6 @@ workflow CONSENSUS_WF_ILASTIK_PP {
             .set {ch_seg_stack}
 
         // Run consensus cell segmentation with CCS cellprofiler pipeline:
-        CONSENSUS_CELL_SEGMENTATION_ILASTIK_PP(ch_seg_stack, cppipe_consensus_cell_seg, plugins)
+        CONSENSUS_CELL_SEGMENTATION_MCCS_PP(ch_seg_stack, cppipe_consensus_cell_seg, plugins)
   
 }

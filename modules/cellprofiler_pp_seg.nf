@@ -162,7 +162,7 @@ process CONSENSUS_CELL_SEGMENTATION {
     """
 }
 
-process CONSENSUS_CELL_SEGMENTATION_ILASTIK_PP {
+process CONSENSUS_CELL_SEGMENTATION_MCCS_PP {
 
     tag "${name}.${roi}"
     label 'process_medium'
@@ -174,7 +174,7 @@ process CONSENSUS_CELL_SEGMENTATION_ILASTIK_PP {
     path(plugin_dir)
 
     output:
-    path "*.{csv,tiff}"
+    path "*.{csv,tiff,png}"
 
     script:
     """

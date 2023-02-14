@@ -1,7 +1,7 @@
 include { NUCLEAR_PREPROCESS; NUCLEAR_SEGMENTATION } from '../modules/nuclear_segmentation.nf'
 include { NUCLEAR_DILATION } from '../modules/nuclear_dilation.nf'
 include { IMCTOOLS } from '../modules/preprocessing.nf'
-include { PREPROCESS_FULL_STACK; CONSENSUS_CELL_SEGMENTATION; PREPROCESS_MCCS_STACK; CONSENSUS_CELL_SEGMENTATION_ILASTIK_PP } from '../modules/cellprofiler_pp_seg.nf'
+include { PREPROCESS_FULL_STACK; CONSENSUS_CELL_SEGMENTATION; PREPROCESS_MCCS_STACK; CONSENSUS_CELL_SEGMENTATION_MCCS_PP } from '../modules/cellprofiler_pp_seg.nf'
 include {PSEUDO_HE } from '../modules/pseudo_HE.nf'
 include {flatten_tiff ; get_roi_tuple; get_fullstack_tuple; group_channel; group_fullstack} from '../lib/core_functions.nf'
 
@@ -29,7 +29,7 @@ workflow CONSENSUS_WF {
         // Group full stack files by sample and roi_id
         ch_full_stack_mapped_tiff = group_channel(IMCTOOLS.out.ch_full_stack_tiff)
         ch_dna_stack = group_channel(IMCTOOLS.out.ch_dna_stack_tiff)
-        ch_dna_stack = ch_dna_stack.flatten().collate( 4 ).view()
+        // ch_dna_stack = ch_dna_stack.flatten().collate( 4 ).view()
         // ch_dna1 = group_channel(IMCTOOLS.out.ch_dna1)
         // ch_dna2 = group_channel(IMCTOOLS.out.ch_dna2)
         ch_Ru = group_channel(IMCTOOLS.out.ch_Ru)
@@ -51,7 +51,7 @@ workflow CONSENSUS_WF {
   
 }
 
-workflow CONSENSUS_WF_ILASTIK_PP {
+workflow CONSENSUS_WF_MCCS_PP {
 
     /*
     * The consensus cell segmentation workflow.
@@ -97,7 +97,7 @@ workflow CONSENSUS_WF_ILASTIK_PP {
             .set {ch_seg_stack}
 
         // Run consensus cell segmentation with CCS cellprofiler pipeline:
-        CONSENSUS_CELL_SEGMENTATION_ILASTIK_PP(ch_seg_stack, cppipe_consensus_cell_seg, plugins)
+        CONSENSUS_CELL_SEGMENTATION_MCCS_PP(ch_seg_stack, cppipe_consensus_cell_seg, plugins)
 
         
   
