@@ -12,7 +12,7 @@
   * [`--input`](#--input)
   * [`--metadata`](#--metadata)
   * [`--full_stack_cppipe`](#--full_stack_cppipe)
-  * [`--ilastik_stack_cppipe`](#--ilastik_stack_cppipe)
+  * [`--mccs_stack_cppipe`](#--mccs_stack_cppipe)
   * [`--segmentation_cppipe`](#--segmentation_cppipe)
   * [`--ilastik_training_ilp`](#--ilastik_training_ilp)
   * [`--compensation_tiff`](#--compensation_tiff)
@@ -60,7 +60,7 @@ nextflow run nf-core/imcyto \
     --input "./inputs/*.mcd" \
     --metadata './inputs/metadata.csv' \
     --full_stack_cppipe './plugins/full_stack_preprocessing.cppipe' \
-    --ilastik_stack_cppipe './plugins/ilastik_stack_preprocessing.cppipe' \
+    --mccs_stack_cppipe './plugins/mccs_stack_preprocessing.cppipe' \
     --segmentation_cppipe './plugins/segmentation.cppipe' \
     --ilastik_training_ilp './plugins/ilastik_training_params.ilp' \
     --plugins './plugins/cp_plugins/' \
@@ -129,7 +129,7 @@ Path to input data file(s) (globs must be surrounded with quotes). Currently sup
 
 ### `--metadata`
 
-Path to metadata `csv` file indicating which images to merge in full and/or Ilastik stack. The file should only contain 3 columns i.e. 'metal', 'full_stack' and 'ilastik_stack'. The `metal` column should contain all the metals used in your antibody panel. The `full_stack` and `ilastik_stack` entries should be `1` or `0` to indicate whether to include or exclude a metal for a given stack, respectively. See [`metadata.csv`](https://github.com/nf-core/test-datasets/blob/imcyto/inputs/metadata.csv) for an example.
+Path to metadata `csv` file indicating which images to merge in full and/or Ilastik stack. The file should only contain 3 columns i.e. 'metal', 'full_stack' and 'mccs_stack'. The `metal` column should contain all the metals used in your antibody panel. The `full_stack` and `mccs_stack` entries should be `1` or `0` to indicate whether to include or exclude a metal for a given stack, respectively. See [`metadata.csv`](https://github.com/nf-core/test-datasets/blob/imcyto/inputs/metadata.csv) for an example.
 
 ```bash
 --metadata 'metadata.csv'
@@ -143,12 +143,12 @@ Path to CellProfiler pipeline file required to create full stack (`cppipe` forma
 --full_stack_cppipe './plugins/full_stack_preprocessing.cppipe'
 ```
 
-### `--ilastik_stack_cppipe`
+### `--mccs_stack_cppipe`
 
 Path to CellProfiler pipeline file required to create Ilastik stack (`cppipe` format).
 
 ```bash
---ilastik_stack_cppipe './plugins/ilastik_stack_preprocessing.cppipe'
+--mccs_stack_cppipe './plugins/mccs_stack_preprocessing.cppipe'
 ```
 
 ### `--segmentation_cppipe`

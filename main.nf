@@ -15,7 +15,7 @@ include { helpMessage; parseInputs;
            } from './lib/core_functions.nf'
 
 include { DILATION_WF } from './workflows/dilation.nf'
-include { CONSENSUS_WF; CONSENSUS_WF_ILASTIK_PP } from './workflows/CCS.nf'
+include { CONSENSUS_WF; CONSENSUS_WF_MCCS_PP } from './workflows/CCS.nf'
 include { MCD_QC } from './workflows/QC.nf'
 include { check_params; print_logo } from './modules/util.nf'
 
@@ -39,11 +39,21 @@ ch_output_docs_images = file("$baseDir/docs/images/", checkIfExists: true)
 * Validate inputs
 */
 if (params.input) {
+    if (params.input.contains('.ome.tiff')){
+        println "OME-TIFF input detected"
     Channel
         .fromPath(params.input, checkIfExists: true)
-        .map { it -> [ it.name.take(it.name.lastIndexOf('.')), it ] }
+        .map { it -> [ it.name.take(it.name.replace('.ome', '').lastIndexOf('.')), it ] }
         .ifEmpty { exit 1, "Input file not found: ${params.input}" }
         .set { ch_mcd }
+
+    } else {
+    Channel
+        .fromPath(params.input, checkIfExists: true)
+        .map { it -> [ it.name.take(it.name.replace('.ome', '').lastIndexOf('.')), it ] }
+        .ifEmpty { exit 1, "Input file not found: ${params.input}" }
+        .set { ch_mcd }
+    }
 } else {
 exit 1, "Input file not specified!"
 }
@@ -90,8 +100,6 @@ workflow {
     print_logo()
     check_params()
 
-    ch_mcd.view()
-
     if (params.segmentation_workflow == 'simple'){
         if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else {Channel.empty().set { ch_full_stack_cppipe }}
         full_stack_cppipe = ch_full_stack_cppipe.first()
@@ -106,15 +114,15 @@ workflow {
         CONSENSUS_WF (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, segmentation_cppipe, ch_plugins )
 
     }
-    else if (params.segmentation_workflow == 'consensus_il'){
+    else if (params.segmentation_workflow == 'consensus_il' | params.segmentation_workflow == 'MCCS'){
 
         if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full stack cppipe file not specified!" }
-        if (params.ilastik_stack_cppipe) { ch_ilastik_stack_cppipe = Channel.fromPath(params.ilastik_stack_cppipe, checkIfExists: true) } else { exit 1, "Ilastik stack cppipe file not specified!" }
+        if (params.mccs_stack_cppipe) { ch_mccs_stack_cppipe = Channel.fromPath(params.mccs_stack_cppipe, checkIfExists: true) } else { exit 1, "Ilastik stack cppipe file not specified!" }
         if (params.segmentation_cppipe)  { ch_segmentation_cppipe = Channel.fromPath(params.segmentation_cppipe, checkIfExists: true) }   else { exit 1, "CellProfiler segmentation cppipe file not specified!" }
         full_stack_cppipe = ch_full_stack_cppipe.first()
-        ilastik_stack_cppipe = ch_ilastik_stack_cppipe.first()
+        mccs_stack_cppipe = ch_mccs_stack_cppipe.first()
         segmentation_cppipe = ch_segmentation_cppipe.first()
-        CONSENSUS_WF_ILASTIK_PP (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, ilastik_stack_cppipe, segmentation_cppipe, ch_plugins )
+        CONSENSUS_WF_MCCS_PP (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, mccs_stack_cppipe, segmentation_cppipe, ch_plugins )
     }
     else if (params.segmentation_workflow == 'QC'){
         MCD_QC (ch_mcd, ch_metadata)

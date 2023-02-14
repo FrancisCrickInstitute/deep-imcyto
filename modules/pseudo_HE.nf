@@ -4,14 +4,9 @@ process PSEUDO_HE{
     */
     tag "${name}.${roi}"
 
-    // executor "slurm"
-	// time "5m"
-	// clusterOptions "--part=gpu --gres=gpu:1"
+    label 'deep_imcyto_local'
 
-    module params.md_conda
-    conda params.dl_conda_env
-
-    publishDir "${params.outdir}/pseudo_HandE", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/pseudo_HandE", mode: params.publish_dir_mode
 
     input:
     tuple val(name), val(roi), path(dna1), path(dna2)

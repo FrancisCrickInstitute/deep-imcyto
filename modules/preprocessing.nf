@@ -5,16 +5,16 @@
 process IMCTOOLS {
 
     tag "$name"
-    // label 'process_low' // 'process_medium'
-    
-    executor "local"
-    // executor "slurm"
-	// time "1h"
-	// clusterOptions "--part=gpu --gres=gpu:1"
+    label "short" // 'process_medium'
 
-    publishDir "${params.outdir}/imctools/${name}", mode: params.publish_dir_mode,
+
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/imctools/${name}", mode: params.publish_dir_mode,
         saveAs: { filename ->
                       if (filename.indexOf("version.txt") > 0) null
+                      else if (filename.endsWith(".ome.tiff") && (params.save_all_stacks == false)) null
+                      else if (filename.contains("spillover") && (params.save_all_stacks == false)) null
+                      else if (filename.contains("nuclear") && (params.save_all_stacks == false)) null
+                      else if (filename.contains("counterstain") && (params.save_all_stacks == false)) null
                       else filename
                 }
 
@@ -24,7 +24,7 @@ process IMCTOOLS {
 
     output:
         tuple val(name), path("*/full_stack/*"), emit: ch_full_stack_tiff
-        tuple val(name), path("*/ilastik_stack/*"), emit: ch_ilastik_stack_tiff, optional: true
+        tuple val(name), path("*/mccs_stack/*"), emit: ch_mccs_stack_tiff, optional: true
         tuple val(name), path("*/nuclear/*"), emit: ch_dna_stack_tiff, optional: true
         tuple val(name), path("*/spillover/*"), emit: ch_spillover_stack_tiff, optional: true
         tuple val(name), path("*/full_stack/191Ir_DNA1.tiff"), emit: ch_dna1, optional: true
@@ -38,30 +38,28 @@ process IMCTOOLS {
         val "${params.outdir}/imctools", emit: ch_imctoolsdir
 
     script: // This script is bundled with the pipeline, in nf-core/imcyto/bin/
-    """
-    run_imctools.py $mcd $metadata
-    pip show imctools | grep "Version" > imctools_version.txt
-    """
+        """
+        run_imctools.py $mcd $metadata ${params.save_all_stacks}
+        pip show imctools | grep "Version" > imctools_version.txt
+        """
 }
 
 
 
-process CORRECT_SPILLOVER {
+process CORRECT_SPILLOVER{
+    /*
+    * Correct isotope spillover.
+    */
 
     tag "$name-$roi"
-    // label 'process_low' // 'process_medium'
-    
-    // executor "local"
-    executor "slurm"
-	time "1h"
-	clusterOptions "--part=gpu --gres=gpu:1"
+    label "deep_imcyto_GPU"
 
-    publishDir "${params.outdir}/channel_preprocessing/${name}/${roi}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/channel_preprocessing/${name}/${roi}", mode: params.publish_dir_mode, enabled: params.save_all_stacks
 
     input:
-        tuple val(name), val(roi), path(full_stack_dir) //from ch_mcd
-        path metadata //from ch_metadata
-        // path sm
+        tuple val(name), val(roi), path(full_stack_dir)
+        path metadata
+    
 
     output:
         tuple val(name), val(roi), path("./spillover_compensated/*.tiff"), emit: ch_spillover_comp_tiff, optional: true
@@ -86,18 +84,13 @@ process CORRECT_SPILLOVER {
 process REMOVE_HOTPIXELS {
 
     tag "$name-$roi"
-    // label 'process_low' // 'process_medium'
-    
-    // executor "local"
-    executor "slurm"
-	time "1h"
-	clusterOptions "--part=gpu --gres=gpu:1"
+    label "deep_imcyto_GPU"
 
-    publishDir "${params.outdir}/channel_preprocessing/${name}/${roi}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/channel_preprocessing/${name}/${roi}", mode: params.publish_dir_mode, enabled: params.save_all_stacks
 
     input:
-        tuple val(name), val(roi), path(full_stack_dir) //from ch_mcd
-        path metadata //from ch_metadata
+        tuple val(name), val(roi), path(full_stack_dir)
+        path metadata
 
     output:
         tuple val(name), val(roi), path("./hotpixel_removed/*.tiff"), emit: ch_hp_tiff, optional: true

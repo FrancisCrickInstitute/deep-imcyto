@@ -2,7 +2,7 @@
  * STEP 6: Output Description HTML
  */
 process output_documentation {
-    publishDir "${params.outdir}/pipeline_info", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/pipeline_info", mode: params.publish_dir_mode
 
     input:
     path output_docs from ch_output_docs
@@ -21,7 +21,7 @@ process output_documentation {
  * Parse software version numbers
  */
 process get_software_versions {
-    publishDir "${params.outdir}/pipeline_info", mode: params.publish_dir_mode,
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/pipeline_info", mode: params.publish_dir_mode,
         saveAs: { filename ->
                       if (filename.indexOf(".csv") > 0) filename
                       else null
