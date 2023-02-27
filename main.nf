@@ -50,7 +50,7 @@ if (params.input) {
     } else {
     Channel
         .fromPath(params.input, checkIfExists: true)
-        .map { it -> [ it.name.take(it.name.replace('.ome', '').lastIndexOf('.')), it ] }
+        .map { it -> [ it.name.take(it.name.lastIndexOf('.')), it ] }
         .ifEmpty { exit 1, "Input file not found: ${params.input}" }
         .set { ch_mcd }
     }
@@ -58,7 +58,13 @@ if (params.input) {
 exit 1, "Input file not specified!"
 }
 
-if (params.metadata)             { ch_metadata = Channel.fromPath(params.metadata, checkIfExists: true) }                         else { exit 1, "Metadata csv file not specified!" }
+if (params.generate_metadata == false){
+    if (params.metadata)             { ch_metadata = Channel.fromPath(params.metadata, checkIfExists: true) }                         else { exit 1, "Metadata csv file not specified!" }}
+else {
+    Channel
+        .empty()
+        .set { ch_metadata }
+}
 if (params.nuclear_weights_directory) { ch_nuclear_weights = Channel.fromPath(params.nuclear_weights_directory, checkIfExists: true) } else { exit 1, "Nuclear weights directory not specified!" }
 
 if (!params.skip_ilastik) {

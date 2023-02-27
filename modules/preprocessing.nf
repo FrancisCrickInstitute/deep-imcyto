@@ -2,10 +2,32 @@
  * STEP 1: imctools
  */
 
+process GENERATE_METADATA {
+    /*
+    * Generate metadata file.
+    */
+
+    tag "$name"
+    label "deep_imcyto_GPU"
+
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/imctools/${name}", mode: params.publish_dir_mode
+
+    input:
+        tuple val(name), path(mcd)
+
+    output:
+        path './metadata.csv', emit: metadata
+
+    script:
+        """
+        autogenerate_deep-imcyto_metadata.py --imc_img $mcd --outdir .
+        """
+}
+
 process IMCTOOLS {
 
     tag "$name"
-    label "short" // 'process_medium'
+    label "deep_imyto_GPU" // 'process_medium'
 
 
     publishDir "${params.outdir}/deep-imcyto/${params.release}/imctools/${name}", mode: params.publish_dir_mode,
