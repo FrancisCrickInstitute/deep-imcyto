@@ -1,6 +1,6 @@
 include { NUCLEAR_PREPROCESS; NUCLEAR_SEGMENTATION } from '../modules/nuclear_segmentation.nf'
 include { NUCLEAR_DILATION } from '../modules/nuclear_dilation.nf'
-include { IMCTOOLS } from '../modules/preprocessing.nf'
+include { IMCTOOLS; GENERATE_METADATA } from '../modules/preprocessing.nf'
 include { PREPROCESS_FULL_STACK; CONSENSUS_CELL_SEGMENTATION; PREPROCESS_MCCS_STACK; CONSENSUS_CELL_SEGMENTATION_MCCS_PP } from '../modules/cellprofiler_pp_seg.nf'
 include {PSEUDO_HE } from '../modules/pseudo_HE.nf'
 include {flatten_tiff ; get_roi_tuple; get_fullstack_tuple; group_channel; group_fullstack} from '../lib/core_functions.nf'
@@ -69,6 +69,12 @@ workflow CONSENSUS_WF_MCCS_PP {
     
     
     main:
+        // Generate metadata if not explicitely provided:
+        if (params.generate_metadata == true) {
+            GENERATE_METADATA(mcd)
+            metadata = GENERATE_METADATA.out.metadata.first()
+        }
+
         // Run IMC tools on raw files:
         IMCTOOLS(mcd, metadata)
 
