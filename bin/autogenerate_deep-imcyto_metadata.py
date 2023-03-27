@@ -97,13 +97,15 @@ counterstain_metals = ['100Ru',
     '99Ru']
 
 def get_metal_dict(imc_ac):
-    housekeeping_isotopes = ['80ArAr',
+    housekeeping_isotopes = ['100Ru', 
+                             '80ArAr',
                         '131Xe',
                         '134Xe',
                         '80ArArArAr80Di',
                         '131XeXe131Di',
                         '134XeXe134Di']
-    hi_corr = ['80ArAr',
+    hi_corr = ['100Ru', 
+               '80ArAr',
                 '131Xe',
                 '134Xe',
                 '80ArAr',

@@ -1,4 +1,4 @@
-include { IMCTOOLS } from '../modules/imctools.nf'
+include {IMCTOOLS; CORRECT_SPILLOVER; REMOVE_HOTPIXELS; GENERATE_METADATA} from '../modules/preprocessing.nf'
 include { PREPROCESS_FULL_STACK } from '../modules/cellprofiler_pp_seg.nf'
 
 workflow MCD_QC {
@@ -9,11 +9,17 @@ workflow MCD_QC {
     */
 
     take:
-    mcd
-    metadata
+        mcd
+        metadata
 
     // Run imctools:
     main:
-    IMCTOOLS(mcd, metadata)
+            // Generate metadata if not explicitely provided:
+        if (params.generate_metadata == true) {
+            GENERATE_METADATA(mcd)
+            metadata = GENERATE_METADATA.out.metadata.first()
+        }
+
+        IMCTOOLS(mcd, metadata)
 
 }

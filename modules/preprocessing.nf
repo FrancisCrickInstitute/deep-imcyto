@@ -27,7 +27,7 @@ process GENERATE_METADATA {
 process IMCTOOLS {
 
     tag "$name"
-    label "deep_imyto_GPU" // 'process_medium'
+    label "process_low" // 'process_medium'
 
 
     publishDir "${params.outdir}/deep-imcyto/${params.release}/imctools/${name}", mode: params.publish_dir_mode,
