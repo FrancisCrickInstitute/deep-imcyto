@@ -10,6 +10,15 @@ import imctools.io.txtparser as txtparser
 import imctools.io.ometiffparser as omeparser
 import imctools.io.mcdxmlparser as meta
 
+def roi_valid(parser, roi_number):
+    try:
+        parser.get_imc_acquisition(roi_number)
+        print(f'Roi {roi_number} valid')
+        return True
+    except:
+        print(f'roi-{roi_number} Not valid acquisition.')
+        return False
+
 ############################################
 ############################################
 ## PARSE ARGUMENTS
@@ -86,10 +95,13 @@ else:
 
 for roi_number in acids:
     if file_type == "mcd":
-        imc_ac = parser.get_imc_acquisition(roi_number)
-        acmeta = parser.meta.get_object(meta.ACQUISITION, roi_number)
-        roi_label = parser.get_acquisition_description(roi_number)
-        roi_map.write("roi_%s,%s,%s,%s" % (roi_number, roi_label, acmeta.properties['StartTimeStamp'], acmeta.properties['EndTimeStamp']) + "\n")
+        if roi_valid(parser, roi_number):
+            imc_ac = parser.get_imc_acquisition(roi_number)
+            acmeta = parser.meta.get_object(meta.ACQUISITION, roi_number)
+            roi_label = parser.get_acquisition_description(roi_number)
+            roi_map.write("roi_%s,%s,%s,%s" % (roi_number, roi_label, acmeta.properties['StartTimeStamp'], acmeta.properties['EndTimeStamp']) + "\n")
+        else:
+            continue
     else:
         imc_ac = parser.get_imc_acquisition()
 

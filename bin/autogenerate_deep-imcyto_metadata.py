@@ -15,6 +15,15 @@ import pandas as pd
 import argparse
 import numpy as np
 
+def roi_valid(parser, roi_number):
+    try:
+        parser.get_imc_acquisition(roi_number)
+        print(f'Roi {roi_number} valid')
+        return True
+    except:
+        print(f'roi-{roi_number} Not valid acquisition.')
+        return False
+
 mccs_metals =[]
 nuclear_metals = ['191Ir', '193Ir']
 spillover_metals = [
@@ -154,16 +163,26 @@ def main(args):
 
     if ext == '.mcd':
 
+        
         # create parser:
         parser = mcdparser.McdParser(imc_img_path)
-        if parser.n_acquisitions != 0:
+        if parser.n_acquisitions > 0:
             roi_ids = parser.acquisition_ids
-            roi_number = roi_ids[0]
-            imc_ac = parser.get_imc_acquisition(roi_number)
-            # get metals and their labels directly from mcd file:
-            metadata_metals = get_metal_dict(imc_ac)
-            metals_df = create_metals_df(metadata_metals=metadata_metals, mcdpath=imc_img_path)
-            metals_df.to_csv(spath)
+            # roi_number = roi_ids[0]
+            for roi_number in roi_ids:
+                if roi_valid(parser, roi_number):
+                    imc_ac = parser.get_imc_acquisition(roi_number)
+                    # get metals and their labels directly from mcd file:
+                    metadata_metals = get_metal_dict(imc_ac)
+                    metals_df = create_metals_df(metadata_metals=metadata_metals, mcdpath=imc_img_path)
+                    metals_df.to_csv(spath)
+                    break
+                else:
+                    continue
+        else:
+            print('No valid acquisitions found.')
+            sys.exit(1)
+
     else:
         if ext == ".txt":
             parser = txtparser.TxtParser(imc_img_path)
