@@ -1,6 +1,6 @@
 include { NUCLEAR_PREPROCESS; NUCLEAR_SEGMENTATION } from '../modules/nuclear_segmentation.nf'
 include { NUCLEAR_DILATION } from '../modules/nuclear_dilation.nf'
-include { IMCTOOLS; GENERATE_METADATA } from '../modules/preprocessing.nf'
+include { IMCTOOLS; IMCTOOLS_GEN; GENERATE_METADATA } from '../modules/preprocessing.nf'
 include { PREPROCESS_FULL_STACK; CONSENSUS_CELL_SEGMENTATION; PREPROCESS_MCCS_STACK; CONSENSUS_CELL_SEGMENTATION_MCCS_PP } from '../modules/cellprofiler_pp_seg.nf'
 include {PSEUDO_HE } from '../modules/pseudo_HE.nf'
 include {flatten_tiff ; get_roi_tuple; get_fullstack_tuple; group_channel; group_fullstack} from '../lib/core_functions.nf'
@@ -72,19 +72,26 @@ workflow CONSENSUS_WF_MCCS_PP {
         // Generate metadata if not explicitely provided:
         if (params.generate_metadata == true) {
             GENERATE_METADATA(mcd)
-            metadata = GENERATE_METADATA.out.metadata.first()
+            imctools_input = GENERATE_METADATA.out.mcd_metadata_tuple
+            imctools_input.view()
+            IMCTOOLS_GEN(imctools_input)
+            // Group full stack files by sample and roi_id
+            ch_full_stack_mapped_tiff = group_channel(IMCTOOLS_GEN.out.ch_full_stack_tiff)
+            ch_dna_stack = group_channel(IMCTOOLS_GEN.out.ch_dna_stack_tiff)
+            ch_dna_stack = ch_dna_stack.flatten().collate( 4 ).view()
+            ch_counterstain_dir = group_fullstack(IMCTOOLS_GEN.out.ch_counterstain_dir)
         }
-
-        // Run IMC tools on raw files:
-        IMCTOOLS(mcd, metadata)
-
-        // Group full stack files by sample and roi_id
-        ch_full_stack_mapped_tiff = group_channel(IMCTOOLS.out.ch_full_stack_tiff)
-        ch_dna_stack = group_channel(IMCTOOLS.out.ch_dna_stack_tiff)
-        ch_dna_stack = ch_dna_stack.flatten().collate( 4 ).view()
-        ch_counterstain_dir = group_fullstack(IMCTOOLS.out.ch_counterstain_dir)
-
-
+        else {
+            // Run IMC tools on raw files:
+            IMCTOOLS(mcd, metadata)
+            
+            // Group full stack files by sample and roi_id
+            ch_full_stack_mapped_tiff = group_channel(IMCTOOLS.out.ch_full_stack_tiff)
+            ch_dna_stack = group_channel(IMCTOOLS.out.ch_dna_stack_tiff)
+            ch_dna_stack = ch_dna_stack.flatten().collate( 4 ).view()
+            ch_counterstain_dir = group_fullstack(IMCTOOLS.out.ch_counterstain_dir)
+        }
+        
         // Run Preprocessing on Full Stack, Ilastik stack and nuclear channels for unet++ segmentation:
         PREPROCESS_FULL_STACK(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe_full_stack, plugins)
         PREPROCESS_MCCS_STACK(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe_mccs_stack, plugins)
