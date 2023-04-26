@@ -1,5 +1,6 @@
-include {IMCTOOLS; CORRECT_SPILLOVER; REMOVE_HOTPIXELS; GENERATE_METADATA} from '../modules/preprocessing.nf'
+include {IMCTOOLS; IMCTOOLS_GEN; CORRECT_SPILLOVER; REMOVE_HOTPIXELS; GENERATE_METADATA; ADJUST_CHANNELS_QC} from '../modules/preprocessing.nf'
 include { PREPROCESS_FULL_STACK } from '../modules/cellprofiler_pp_seg.nf'
+include {group_fullstack} from '../lib/core_functions.nf'
 
 workflow MCD_QC {
 
@@ -17,9 +18,17 @@ workflow MCD_QC {
             // Generate metadata if not explicitely provided:
         if (params.generate_metadata == true) {
             GENERATE_METADATA(mcd)
-            metadata = GENERATE_METADATA.out.metadata.first()
+            imctools_input = GENERATE_METADATA.out.mcd_metadata_tuple
+            imctools_input.view()
+            IMCTOOLS_GEN(imctools_input)
+            ch_full_stack_dir = group_fullstack(IMCTOOLS_GEN.out.ch_full_stack_dir)
+        }
+        else {
+            IMCTOOLS(mcd, metadata)
+            ch_full_stack_dir = group_fullstack(IMCTOOLS.out.ch_full_stack_dir)
         }
 
-        IMCTOOLS(mcd, metadata)
+        ADJUST_CHANNELS_QC(ch_full_stack_dir)
+
 
 }

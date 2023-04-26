@@ -127,6 +127,7 @@ for roi_number in acids:
 
             for l, m in zip(imc_ac.channel_labels, imc_ac.channel_metals):
                 filename = "%s.tiff" % (l)
+                filename = filename.replace('/','-')
                 print(m)
 
                 # MATCH METAL LABEL TO METADATA METAL COLUMN

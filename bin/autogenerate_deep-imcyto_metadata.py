@@ -158,7 +158,7 @@ def main(args):
     # get file extension:
     path, ext = os.path.splitext(imc_img_path)
     img_id = '_'.join(path.split('/')[-3:])
-    spath = os.path.join(args.outdir, f'{img_id}.csv')
+    spath = os.path.join(args.outdir, f'{img_id}_detected_marker_labels.csv')
     print(img_id)
 
     if ext == '.mcd':
@@ -204,7 +204,7 @@ def main(args):
     metadata['nuclear'] = metadata['metal'].apply(lambda x: assign_to_group(x, nuclear_metals))
     metadata['spillover'] = metadata['metal'].apply(lambda x: assign_to_group(x, spillover_metals))
     metadata['counterstain'] = metadata['metal'].apply(lambda x: assign_to_group(x, counterstain_metals))
-    metadata_spath = os.path.join(args.outdir, f'metadata.csv')
+    metadata_spath = os.path.join(args.outdir, 'metadata.csv')
     metadata.to_csv(metadata_spath, index=False)
     
     print('Done.')
