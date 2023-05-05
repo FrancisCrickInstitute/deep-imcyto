@@ -8,7 +8,7 @@ process GENERATE_METADATA {
     */
 
     tag "$name"
-    label "deep_imcyto_GPU"
+    label 'deep_imcyto_CPU'
 
     publishDir "${params.outdir}/deep-imcyto/${params.release}/imctools/${name}", mode: params.publish_dir_mode
 

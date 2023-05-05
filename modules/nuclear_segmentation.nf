@@ -5,7 +5,7 @@
 process NUCLEAR_PREPROCESS {
 
     tag "${name}.${roi}"
-    label 'deep_imcyto_GPU'
+    label 'deep_imcyto_CPU'
 
     publishDir "${params.outdir}/deep-imcyto/${params.release}/nuclear_preprocess", mode: params.publish_dir_mode, overwrite: true
 
