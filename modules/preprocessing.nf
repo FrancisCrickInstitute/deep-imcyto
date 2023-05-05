@@ -10,7 +10,13 @@ process GENERATE_METADATA {
     tag "$name"
     label 'deep_imcyto_CPU'
 
-    publishDir "${params.outdir}/deep-imcyto/${params.release}/imctools/${name}", mode: params.publish_dir_mode
+    publishDir "${params.outdir}/deep-imcyto/${params.release}/imctools/${name}", mode: params.publish_dir_mode,
+        saveAs: { filename ->
+                        if (filename.endsWith(".mcd")) null
+                        else if (filename.endsWith(".txt")) null
+                        else if (filename.endsWith(".ome.tiff")) null
+                        else filename
+                    }
 
     input:
         tuple val(name), path(mcd)
