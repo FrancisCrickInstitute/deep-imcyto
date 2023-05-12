@@ -106,14 +106,16 @@ counterstain_metals = ['100Ru',
     '99Ru']
 
 def get_metal_dict(imc_ac):
-    housekeeping_isotopes = ['100Ru', 
+    housekeeping_isotopes = ['100Ru',
+                             '100RuRu100Di', 
                              '80ArAr',
                         '131Xe',
                         '134Xe',
                         '80ArArArAr80Di',
                         '131XeXe131Di',
                         '134XeXe134Di']
-    hi_corr = ['100Ru', 
+    hi_corr = ['100Ru',
+               '100Ru', 
                '80ArAr',
                 '131Xe',
                 '134Xe',
@@ -147,6 +149,18 @@ def assign_to_group(x,metals):
         return 1
     else:
         return 0
+    
+def make_metadata(metals_df):
+    metals = metals_df['isotope'].values
+    fullstack_true = np.ones_like(metals)
+    metadata = pd.DataFrame(data=list(zip(metals, fullstack_true)), columns= ['metal', 'full_stack'])
+    metadata['mccs_stack'] = metadata['metal'].apply(lambda x: assign_to_group(x, mccs_metals))
+    metadata['nuclear'] = metadata['metal'].apply(lambda x: assign_to_group(x, nuclear_metals))
+    metadata['spillover'] = metadata['metal'].apply(lambda x: assign_to_group(x, spillover_metals))
+    metadata['counterstain'] = metadata['metal'].apply(lambda x: assign_to_group(x, counterstain_metals))
+    metadata_spath = os.path.join(args.outdir, 'metadata.csv')
+    metadata.to_csv(metadata_spath, index=False)
+
 
 def main(args):
 
@@ -162,8 +176,6 @@ def main(args):
     print(img_id)
 
     if ext == '.mcd':
-
-        
         # create parser:
         parser = mcdparser.McdParser(imc_img_path)
         if parser.n_acquisitions > 0:
@@ -176,6 +188,7 @@ def main(args):
                     metadata_metals = get_metal_dict(imc_ac)
                     metals_df = create_metals_df(metadata_metals=metadata_metals, mcdpath=imc_img_path)
                     metals_df.to_csv(spath)
+                    make_metadata(metals_df)
                     break
                 else:
                     continue
@@ -183,29 +196,19 @@ def main(args):
             print('No valid acquisitions found.')
             sys.exit(1)
 
+    elif ext == ".txt":
+        parser = txtparser.TxtParser(imc_img_path)
+        imc_ac = parser.get_imc_acquisition()
+        # get metals and their labels directly from txt file:
+        metadata_metals = get_metal_dict(imc_ac)
+        metals_df = create_metals_df(metadata_metals=metadata_metals, mcdpath=imc_img_path)
+        metals_df.to_csv(spath)
+        make_metadata(metals_df)
+    elif ext == ".tiff" or ext == ".tif":
+        parser = omeparser.OmetiffParser(imc_img_path)
     else:
-        if ext == ".txt":
-            parser = txtparser.TxtParser(imc_img_path)
-            imc_ac = parser.get_imc_acquisition()
-            # get metals and their labels directly from txt file:
-            metadata_metals = get_metal_dict(imc_ac)
-            metals_df = create_metals_df(metadata_metals=metadata_metals, mcdpath=imc_img_path)
-            metals_df.to_csv(spath)
-        elif ext == ".tiff" or ext == ".tif":
-            parser = omeparser.OmetiffParser(imc_img_path)
-        else:
-            print("{}: Invalid input file type - should be txt, tiff, or mcd!".format(ext))
-            sys.exit(1)
-        
-    metals = metals_df['isotope'].values
-    fullstack_true = np.ones_like(metals)
-    metadata = pd.DataFrame(data=list(zip(metals, fullstack_true)), columns= ['metal', 'full_stack'])
-    metadata['mccs_stack'] = metadata['metal'].apply(lambda x: assign_to_group(x, mccs_metals))
-    metadata['nuclear'] = metadata['metal'].apply(lambda x: assign_to_group(x, nuclear_metals))
-    metadata['spillover'] = metadata['metal'].apply(lambda x: assign_to_group(x, spillover_metals))
-    metadata['counterstain'] = metadata['metal'].apply(lambda x: assign_to_group(x, counterstain_metals))
-    metadata_spath = os.path.join(args.outdir, 'metadata.csv')
-    metadata.to_csv(metadata_spath, index=False)
+        print("{}: Invalid input file type - should be txt, tiff, or mcd!".format(ext))
+        sys.exit(1)
     
     print('Done.')
 
