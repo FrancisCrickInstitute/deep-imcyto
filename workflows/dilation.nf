@@ -3,7 +3,7 @@ include { NUCLEAR_DILATION; DILATION_MEASURE; DILATION_MEASURE as CELL_MEASURE }
 include { PREPROCESS_FULL_STACK } from '../modules/cellprofiler_pp_seg.nf'
 include {PSEUDO_HE } from '../modules/pseudo_HE.nf'
 include {flatten_tiff ; get_roi_tuple; get_fullstack_tuple; group_channel; group_fullstack} from '../lib/core_functions.nf'
-include {IMCTOOLS; CORRECT_SPILLOVER; REMOVE_HOTPIXELS; GENERATE_METADATA} from '../modules/preprocessing.nf'
+include {IMCTOOLS; IMCTOOLS_GEN; CORRECT_SPILLOVER; REMOVE_HOTPIXELS; GENERATE_METADATA} from '../modules/preprocessing.nf'
 include {NoCompNoPreprocess; NoCompHotPixel; NoCompCP; CompHotPixel; CompNoPreprocess} from '../subworkflows/preprocessing_sub.nf'
 
 workflow DILATION_WF {
@@ -29,20 +29,47 @@ workflow DILATION_WF {
 
     main:
         
+        // if (params.generate_metadata == true) {
+        //     GENERATE_METADATA(mcd)
+        //     metadata = GENERATE_METADATA.out.metadata.first()
+        // }
+
         if (params.generate_metadata == true) {
             GENERATE_METADATA(mcd)
-            metadata = GENERATE_METADATA.out.metadata.first()
+            imctools_input = GENERATE_METADATA.out.mcd_metadata_tuple
+            imctools_input.view()
+            IMCTOOLS_GEN(imctools_input)
+            // Group full stack files by sample and roi_id
+            ch_full_stack_mapped_tiff = group_channel(IMCTOOLS_GEN.out.ch_full_stack_tiff)
+            ch_dna_stack = group_channel(IMCTOOLS_GEN.out.ch_dna_stack_tiff)
+            ch_dna_stack = ch_dna_stack.flatten().collate( 4 ).view()
+            ch_counterstain_dir = group_fullstack(IMCTOOLS_GEN.out.ch_counterstain_dir)
+            ch_full_stack_dir = group_fullstack(IMCTOOLS_GEN.out.ch_full_stack_dir)
+            ch_counterstain_dir = group_fullstack(IMCTOOLS_GEN.out.ch_counterstain_dir)
+        }
+        else {
+            // Run IMC tools on raw files:
+            IMCTOOLS(mcd, metadata)
+            
+            // Group full stack files by sample and roi_id
+            ch_full_stack_mapped_tiff = group_channel(IMCTOOLS.out.ch_full_stack_tiff)
+            ch_dna_stack = group_channel(IMCTOOLS.out.ch_dna_stack_tiff)
+            ch_dna_stack = ch_dna_stack.flatten().collate( 4 ).view()
+            ch_counterstain_dir = group_fullstack(IMCTOOLS.out.ch_counterstain_dir)
+            ch_full_stack_dir = group_fullstack(IMCTOOLS.out.ch_full_stack_dir)
+            ch_counterstain_dir = group_fullstack(IMCTOOLS.out.ch_counterstain_dir)
+
         }
 
         //Run IMCTOOLS:
-        IMCTOOLS(mcd, metadata)
+        // IMCTOOLS(mcd, metadata)
 
         // Group full stack files by sample and roi_id:
-        ch_full_stack_mapped_tiff = group_channel(IMCTOOLS.out.ch_full_stack_tiff)
-        ch_dna_stack = group_channel(IMCTOOLS.out.ch_dna_stack_tiff)
-        ch_dna_stack = ch_dna_stack.flatten().collate( 4 )
-        ch_full_stack_dir = group_fullstack(IMCTOOLS.out.ch_full_stack_dir)
-        ch_counterstain_dir = group_fullstack(IMCTOOLS.out.ch_counterstain_dir)
+        // ch_full_stack_mapped_tiff = group_channel(IMCTOOLS.out.ch_full_stack_tiff)
+        // ch_dna_stack = group_channel(IMCTOOLS.out.ch_dna_stack_tiff)
+        // ch_dna_stack = ch_dna_stack.flatten().collate( 4 )
+        // ch_full_stack_dir = group_fullstack(IMCTOOLS.out.ch_full_stack_dir)
+        // ch_counterstain_dir = group_fullstack(IMCTOOLS.out.ch_counterstain_dir)
 
         if (params.compensation_tiff != false) {
 

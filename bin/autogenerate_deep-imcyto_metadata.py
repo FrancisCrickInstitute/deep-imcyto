@@ -206,6 +206,12 @@ def main(args):
         make_metadata(metals_df)
     elif ext == ".tiff" or ext == ".tif":
         parser = omeparser.OmetiffParser(imc_img_path)
+        imc_ac = parser.get_imc_acquisition()
+        # get metals and their labels directly from txt file:
+        metadata_metals = get_metal_dict(imc_ac)
+        metals_df = create_metals_df(metadata_metals=metadata_metals, mcdpath=imc_img_path)
+        metals_df.to_csv(spath)
+        make_metadata(metals_df)
     else:
         print("{}: Invalid input file type - should be txt, tiff, or mcd!".format(ext))
         sys.exit(1)

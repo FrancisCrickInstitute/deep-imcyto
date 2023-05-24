@@ -41,6 +41,7 @@ process IMCTOOLS {
         saveAs: { filename ->
                       if (filename.indexOf("version.txt") > 0) null
                       else if (filename.endsWith(".ome.tiff") && (params.save_all_stacks == false)) null
+                      else if (filename.endsWith(".tiff") && (params.save_all_stacks == false)) null
                       else if (filename.contains("spillover") && (params.save_all_stacks == false)) null
                       else if (filename.contains("nuclear") && (params.save_all_stacks == false)) null
                       else if (filename.contains("counterstain") && (params.save_all_stacks == false)) null
@@ -84,6 +85,7 @@ process IMCTOOLS_GEN {
         saveAs: { filename ->
                       if (filename.indexOf("version.txt") > 0) null
                       else if (filename.endsWith(".ome.tiff") && (params.save_all_stacks == false)) null
+                      else if (filename.endsWith(".tiff") && (params.save_all_stacks == false)) null
                       else if (filename.contains("spillover") && (params.save_all_stacks == false)) null
                       else if (filename.contains("nuclear") && (params.save_all_stacks == false)) null
                       else if (filename.contains("counterstain") && (params.save_all_stacks == false)) null
