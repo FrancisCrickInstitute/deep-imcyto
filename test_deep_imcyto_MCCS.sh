@@ -12,18 +12,18 @@ export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rub
 
 # RUN DEEP-IMCYTO:
 nextflow run ./main.nf\
-    --input "/camp/project/proj-tracerx-lung/tctProjects/rubicon/PHLEX/release_testing/test_dataset/images/p1/*/*/*.tiff"\
-    --outdir '../results_MCCS'\
-    --metadata 'assets/metadata/PHLEX_simple_segmentation_metadata_p1.csv'\
-    --email alastair.magness@crick.ac.uk\
-    --nuclear_weights_directory "/camp/project/proj-sahaie-swantonc/working/imc_segmentation/src/weights"\
+    --input "/camp/project/proj-tracerx-lung/tctProjects/rubicon/PHLEX/test_files/test_images_20230807/*.tiff"\
+    --outdir '../results'\
+    --release 'MCCS'\
+    --metadata 'assets/metadata/PHLEX_test_metadata.csv'\
+    --nuclear_weights_directory "../deep-imcyto_weights"\
     --segmentation_workflow 'MCCS'\
     --full_stack_cppipe './assets/cppipes/full_stack_preprocessing.cppipe'\
     --segmentation_cppipe './assets/cppipes/segmentationP1.cppipe'\
     --mccs_stack_cppipe './assets/cppipes/mccs_stack_preprocessing.cppipe'\
-    --compensation_tiff './assets/spillover/P1_imc*.tiff'\
+    --compensation_tiff './assets/spillover/P1_imc_sm_pixel_adaptive.tiff'\
     --plugins "./assets/plugins"\
-    --singularity_bind_path '/camp'\
+    --singularity_bind_path '/camp,/nemo'\
     -profile crick\
     -w '/camp/project/proj-tracerx-lung/txscratch/rubicon/deep_imcyto/work'\
     # -resume

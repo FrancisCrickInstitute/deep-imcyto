@@ -46,6 +46,17 @@ workflow NoCompNoPreprocess {
         // Create pseudo H&E images from nuclear + other channels:
         PSEUDO_HE(ch_dna_stack, ch_counterstain_dir)
 
+        // Join masks and nuc ikmages for segmentation overlay images:
+        NUCLEAR_PREPROCESS.out.ch_preprocessed_nuclei
+            .join(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions, by: [0,1])
+            .set {ch_seg_overlay}
+
+        ch_seg_overlay
+            .join(NUCLEAR_DILATION.out.ch_nuclear_dilation, by: [0,1])
+            .set {ch_seg_overlay}
+
+        OVERLAYS(ch_seg_overlay)
+
 }
 
 workflow NoCompHotPixel {
@@ -164,6 +175,17 @@ workflow CompHotPixel {
         // Create pseudo H&E images from nuclear + other channels:
         PSEUDO_HE(ch_dna_stack, ch_counterstain_dir)
 
+         // Join masks and nuc ikmages for segmentation overlay images:
+        NUCLEAR_PREPROCESS.out.ch_preprocessed_nuclei
+            .join(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions, by: [0,1])
+            .set {ch_seg_overlay}
+
+        ch_seg_overlay
+            .join(NUCLEAR_DILATION.out.ch_nuclear_dilation, by: [0,1])
+            .set {ch_seg_overlay}
+
+        OVERLAYS(ch_seg_overlay)
+
 }
 
 workflow CompNoPreprocess {
@@ -202,4 +224,15 @@ workflow CompNoPreprocess {
 
         // Create pseudo H&E images from nuclear + other channels:
         PSEUDO_HE(ch_dna_stack, ch_counterstain_dir)
+
+         // Join masks and nuc ikmages for segmentation overlay images:
+        NUCLEAR_PREPROCESS.out.ch_preprocessed_nuclei
+            .join(NUCLEAR_SEGMENTATION.out.ch_nuclear_predictions, by: [0,1])
+            .set {ch_seg_overlay}
+
+        ch_seg_overlay
+            .join(NUCLEAR_DILATION.out.ch_nuclear_dilation, by: [0,1])
+            .set {ch_seg_overlay}
+
+        OVERLAYS(ch_seg_overlay)
 }

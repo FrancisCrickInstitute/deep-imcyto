@@ -12,12 +12,11 @@ export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rub
 
 # RUN PIPELINE: test
 nextflow run ./main.nf\
-    --input "/camp/project/proj-tracerx-lung/tctProjects/rubicon/non_rubicon_datasets/van_maldegem_valand_2021/IMC_ometiff_files/*.tiff"\
+    --input "/camp/project/proj-tracerx-lung/tctProjects/rubicon/PHLEX/test_files/test_images_20230807/*.tiff"\
     --outdir '../results'\
-    --release 'simple_segmentation_1px'\
-    --generate_metadata true\
-    --email alastair.magness@crick.ac.uk\
-    --nuclear_weights_directory "/camp/project/proj-sahaie-swantonc/working/imc_segmentation/src/weights"\
+    --release 'simple_segmentation'\
+    --metadata 'assets/metadata/PHLEX_test_metadata.csv'\
+    --nuclear_weights_directory "../deep-imcyto_weights"\
     --segmentation_workflow 'simple'\
     --nuclear_dilation_radius 1\
     --preprocess_method 'none'\
@@ -25,4 +24,4 @@ nextflow run ./main.nf\
     --singularity_bind_path '/camp,/nemo'\
     -profile crick\
     -w '/camp/project/proj-tracerx-lung/txscratch/rubicon/deep_imcyto/work'\
-    -resume
+    # -resume
