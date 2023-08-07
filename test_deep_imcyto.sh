@@ -12,15 +12,32 @@ export NXF_SINGULARITY_CACHEDIR='/camp/project/proj-tracerx-lung/tctProjects/rub
 
 # RUN PIPELINE: test
 nextflow run ./main.nf\
-    --input "/camp/project/proj-tracerx-lung/tctProjects/rubicon/PHLEX/release_testing/test_dataset/images/p1/*/*/*.tiff"\
-    --outdir '../results/deep-imcyto/simple_segmentation'\
-    --metadata 'assets/metadata/PHLEX_simple_segmentation_metadata_p1.csv'\
+    --input "/camp/project/proj-tracerx-lung/tctProjects/rubicon/non_rubicon_datasets/van_maldegem_valand_2021/IMC_ometiff_files/*.tiff"\
+    --outdir '../results'\
+    --release 'simple_segmentation_1px'\
+    --generate_metadata true\
     --email alastair.magness@crick.ac.uk\
     --nuclear_weights_directory "/camp/project/proj-sahaie-swantonc/working/imc_segmentation/src/weights"\
     --segmentation_workflow 'simple'\
-    --nuclear_dilation_radius 5\
-    --preprocess_method 'hotpixel'\
+    --nuclear_dilation_radius 1\
+    --preprocess_method 'none'\
     --n_neighbours 5\
+    --singularity_bind_path '/camp,/nemo'\
     -profile crick\
     -w '/camp/project/proj-tracerx-lung/txscratch/rubicon/deep_imcyto/work'\
     -resume
+
+
+# nextflow run /camp/project/proj-tracerx-lung/tctProjects/rubicon/PHLEX/methods_paper_tests/deep-imcyto/main.nf\
+#     --input "/camp/project/proj-tracerx-lung/tctProjects/rubicon/non_rubicon_datasets/bodenmiller/nature_jan_2020/OMEnMasks/ome/*.tiff"\
+#     --outdir "/camp/project/proj-tracerx-lung/tctProjects/rubicon/PHLEX/methods_paper_tests/results"\
+#     --release "bodenmiller_2020_basel_zurich"\
+#     --generate_metadata false\
+#     --metadata "/camp/project/proj-tracerx-lung/tctProjects/rubicon/PHLEX/methods_paper_tests/metadata/gen_metadata.csv"\
+#     --email "alastair.magness@crick.ac.uk"\
+#     --nuclear_weights_directory "/camp/lab/swantonc/working/Alastair/pipeline_tests/PHLEX_testing/deep-imcyto_weights"\
+#     --segmentation_workflow "simple"\
+#     --singularity_bind_path "/camp,/nemo"\
+#     -profile crick\
+#     -w "/camp/project/proj-tracerx-lung/txscratch/rubicon/deep_imcyto/work"\
+#     -resume
