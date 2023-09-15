@@ -122,9 +122,9 @@ workflow {
     }
     else if (params.segmentation_workflow == 'consensus_il' | params.segmentation_workflow == 'MCCS'){
         if (params.nuclear_weights_directory) { ch_nuclear_weights = Channel.fromPath(params.nuclear_weights_directory, checkIfExists: true) } else { exit 1, "Nuclear weights directory not specified!" }
-        if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full stack cppipe file not specified!" }
-        if (params.mccs_stack_cppipe) { ch_mccs_stack_cppipe = Channel.fromPath(params.mccs_stack_cppipe, checkIfExists: true) } else { exit 1, "Ilastik stack cppipe file not specified!" }
-        if (params.segmentation_cppipe)  { ch_segmentation_cppipe = Channel.fromPath(params.segmentation_cppipe, checkIfExists: true) }   else { exit 1, "CellProfiler segmentation cppipe file not specified!" }
+        if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full_stack_cppipe file not specified!" }
+        if (params.mccs_stack_cppipe) { ch_mccs_stack_cppipe = Channel.fromPath(params.mccs_stack_cppipe, checkIfExists: true) } else { exit 1, "mccs_stack_cppipe preprocessing file not specified!" }
+        if (params.segmentation_cppipe)  { ch_segmentation_cppipe = Channel.fromPath(params.segmentation_cppipe, checkIfExists: true) }   else { exit 1, "MCCS segmentation_cppipe file not specified!" }
         full_stack_cppipe = ch_full_stack_cppipe.first()
         mccs_stack_cppipe = ch_mccs_stack_cppipe.first()
         segmentation_cppipe = ch_segmentation_cppipe.first()
