@@ -134,7 +134,7 @@ workflow {
         MCD_QC (ch_mcd, ch_metadata)
     }
     else {
-        exit 1, "Segmentation type not specified!"
+        exit 1, "Specified workflow not recognised!"
     }
 
 }

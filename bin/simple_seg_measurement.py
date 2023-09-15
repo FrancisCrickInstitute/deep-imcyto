@@ -106,6 +106,7 @@ def main(args):
     stack, markers = read_channels(full_stack_paths)
 
     mask = io.imread(args.label_image_path)
+    height, width = mask.shape[0], mask.shape[1]
 
     mask = clear_border(mask)
 
@@ -127,8 +128,10 @@ def main(args):
     measurements = pd.DataFrame(measurements)
     
     # convert row,col centroids to x, y centroids:
+    measurements['Location_Center_X'] = measurements['centroid-1']
+    measurements['Location_Center_Y'] = measurements['centroid-0']
     measurements['centroid-x'] = measurements['centroid-1']
-    measurements['centroid-y'] =  measurements['centroid-0'].max() - measurements['centroid-0']
+    measurements['centroid-y'] =  height - measurements['centroid-0']
     
     # rename numeric columns to channel names:
     measurements, mean_properties_ids = rename_properties(measurements, 'mean_intensity', markers)
