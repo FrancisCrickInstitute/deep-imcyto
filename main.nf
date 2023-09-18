@@ -98,7 +98,7 @@ if (params.plugins) {
 ch_plugins = ch_plugins.first()
 compensation = ch_compensation.first()
 ch_metadata = ch_metadata.first()
-ch_nuclear_weights = ch_nuclear_weights.first()
+
 
 workflow {
 
@@ -108,6 +108,7 @@ workflow {
     if (params.segmentation_workflow == 'simple'){
         if (params.nuclear_weights_directory) { ch_nuclear_weights = Channel.fromPath(params.nuclear_weights_directory, checkIfExists: true) } else { exit 1, "Nuclear weights directory not specified!" }
         if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else {Channel.empty().set { ch_full_stack_cppipe }}
+        ch_nuclear_weights = ch_nuclear_weights.first()
         full_stack_cppipe = ch_full_stack_cppipe.first()
         DILATION_WF (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, ch_full_stack_cppipe, ch_plugins )
     }
@@ -115,6 +116,7 @@ workflow {
         if (params.nuclear_weights_directory) { ch_nuclear_weights = Channel.fromPath(params.nuclear_weights_directory, checkIfExists: true) } else { exit 1, "Nuclear weights directory not specified!" }
         if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full stack cppipe file not specified!" }
         if (params.segmentation_cppipe)  { ch_segmentation_cppipe = Channel.fromPath(params.segmentation_cppipe, checkIfExists: true) }   else { exit 1, "CellProfiler segmentation cppipe file not specified!" }
+        ch_nuclear_weights = ch_nuclear_weights.first()
         full_stack_cppipe = ch_full_stack_cppipe.first()
         segmentation_cppipe = ch_segmentation_cppipe.first()
         CONSENSUS_WF (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, segmentation_cppipe, ch_plugins )
@@ -125,12 +127,13 @@ workflow {
         if (params.full_stack_cppipe)    { ch_full_stack_cppipe = Channel.fromPath(params.full_stack_cppipe, checkIfExists: true) }       else { exit 1, "CellProfiler full_stack_cppipe file not specified!" }
         if (params.mccs_stack_cppipe) { ch_mccs_stack_cppipe = Channel.fromPath(params.mccs_stack_cppipe, checkIfExists: true) } else { exit 1, "mccs_stack_cppipe preprocessing file not specified!" }
         if (params.segmentation_cppipe)  { ch_segmentation_cppipe = Channel.fromPath(params.segmentation_cppipe, checkIfExists: true) }   else { exit 1, "MCCS segmentation_cppipe file not specified!" }
+        ch_nuclear_weights = ch_nuclear_weights.first()
         full_stack_cppipe = ch_full_stack_cppipe.first()
         mccs_stack_cppipe = ch_mccs_stack_cppipe.first()
         segmentation_cppipe = ch_segmentation_cppipe.first()
         CONSENSUS_WF_MCCS_PP (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, mccs_stack_cppipe, segmentation_cppipe, ch_plugins )
     }
-    else if (params.segmentation_workflow == 'QC'){
+    else if (params.segmentation_workflow == 'QC' | params.segmentation_workflow == 'qc'){
         MCD_QC (ch_mcd, ch_metadata)
     }
     else {
