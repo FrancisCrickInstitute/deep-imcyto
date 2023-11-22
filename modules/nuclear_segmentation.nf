@@ -17,7 +17,7 @@ process NUCLEAR_PREPROCESS {
     
     script:
     """
-    unet_preprocess.py --dna1 $dna1 --dna2 $dna2 --outdir . --imagename $name-$roi
+    unet_preprocess.py --dna1 $dna1 --dna2 $dna2 --outdir . --imagename '$name-$roi'
     """
 
 }
