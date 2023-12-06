@@ -6,7 +6,7 @@ include {PSEUDO_HE } from '../modules/pseudo_HE.nf'
 include {flatten_tiff ; get_roi_tuple; get_fullstack_tuple; group_channel; group_fullstack} from '../lib/core_functions.nf'
 
 
-workflow CELLPROFILER {
+workflow CELLPROFILER_WF {
 
     /*
     * The consensus cell segmentation workflow.
@@ -51,7 +51,7 @@ workflow CELLPROFILER {
   
 }
 
-workflow MCCS {
+workflow MCCS_WF {
 
     /*
     * The consensus cell segmentation workflow.
