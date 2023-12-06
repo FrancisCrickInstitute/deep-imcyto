@@ -1,11 +1,11 @@
 #!/usr/bin/env nextflow
 /*
 ========================================================================================
-                         nf-core/imcyto
+                         deep-imcyto
 ========================================================================================
- nf-core/imcyto Analysis Pipeline.
+ deep-imcyto IMC Segmentation Pipeline.
  #### Homepage / Documentation
- https://github.com/nf-core/imcyto
+ https://github.com/deep-imcyto
 ----------------------------------------------------------------------------------------
 */
 
@@ -13,9 +13,8 @@ nextflow.enable.dsl=2
 
 include { helpMessage; parseInputs;
            } from './lib/core_functions.nf'
-
 include { DILATION_WF } from './workflows/dilation.nf'
-include { CONSENSUS_WF; CONSENSUS_WF_MCCS_PP } from './workflows/CCS.nf'
+include { CELLPROFILER; MCCS } from './workflows/CCS.nf'
 include { MCD_QC } from './workflows/QC.nf'
 include { check_params; print_logo } from './modules/util.nf'
 
@@ -119,7 +118,7 @@ workflow {
         ch_nuclear_weights = ch_nuclear_weights.first()
         full_stack_cppipe = ch_full_stack_cppipe.first()
         segmentation_cppipe = ch_segmentation_cppipe.first()
-        CONSENSUS_WF (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, segmentation_cppipe, ch_plugins )
+        CELLPROFILER (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, segmentation_cppipe, ch_plugins )
 
     }
     else if (params.segmentation_workflow == 'consensus_il' | params.segmentation_workflow == 'MCCS'){
@@ -131,7 +130,7 @@ workflow {
         full_stack_cppipe = ch_full_stack_cppipe.first()
         mccs_stack_cppipe = ch_mccs_stack_cppipe.first()
         segmentation_cppipe = ch_segmentation_cppipe.first()
-        CONSENSUS_WF_MCCS_PP (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, mccs_stack_cppipe, segmentation_cppipe, ch_plugins )
+        MCCS (ch_mcd, ch_metadata, ch_nuclear_weights, compensation, full_stack_cppipe, mccs_stack_cppipe, segmentation_cppipe, ch_plugins )
     }
     else if (params.segmentation_workflow == 'QC' | params.segmentation_workflow == 'qc'){
         MCD_QC (ch_mcd, ch_metadata)

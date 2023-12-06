@@ -1,12 +1,12 @@
 include { NUCLEAR_PREPROCESS; NUCLEAR_SEGMENTATION } from '../modules/nuclear_segmentation.nf'
 include { NUCLEAR_DILATION } from '../modules/nuclear_dilation.nf'
 include { IMCTOOLS } from '../modules/imctools.nf'
-include { PREPROCESS_FULL_STACK; CONSENSUS_CELL_SEGMENTATION; PREPROCESS_MCCS_STACK; CONSENSUS_CELL_SEGMENTATION_MCCS_PP } from '../modules/cellprofiler_pp_seg.nf'
+include { PREPROCESS_FULL_STACK; CELLPROFILER; PREPROCESS_MCCS_STACK; MCCS } from '../modules/cellprofiler_pp_seg.nf'
 include {PSEUDO_HE } from '../modules/pseudo_HE.nf'
 include {flatten_tiff ; get_roi_tuple ; group_channel} from '../lib/core_functions.nf'
 
 
-workflow CONSENSUS_WF {
+workflow CELLPROFILER {
 
     /*
     * The consensus cell segmentation workflow.
@@ -45,11 +45,11 @@ workflow CONSENSUS_WF {
             .set {ch_seg_stack}
 
         // Run consensus cell segmentation with CCS cellprofiler pipeline:
-        CONSENSUS_CELL_SEGMENTATION(ch_seg_stack, cppipe_consensus_cell_seg, plugins)
+        CELLPROFILER(ch_seg_stack, cppipe_consensus_cell_seg, plugins)
   
 }
 
-workflow CONSENSUS_WF_MCCS_PP {
+workflow MCCS {
 
     /*
     * The consensus cell segmentation workflow.
@@ -101,6 +101,6 @@ workflow CONSENSUS_WF_MCCS_PP {
             .set {ch_seg_stack}
 
         // Run consensus cell segmentation with CCS cellprofiler pipeline:
-        CONSENSUS_CELL_SEGMENTATION_MCCS_PP(ch_seg_stack, cppipe_consensus_cell_seg, plugins)
+        MCCS(ch_seg_stack, cppipe_consensus_cell_seg, plugins)
   
 }
