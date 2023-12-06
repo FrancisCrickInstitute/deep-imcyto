@@ -176,6 +176,7 @@ def reprocess_unlikely_labels(mask, error_mask, boundary_im, nuc_im, com_im, com
 
 def randomise_labels(mask):
     new_labels = np.arange(1,len(np.unique(mask)))
+    np.random.seed(42)
     np.random.shuffle(new_labels)
     old_labels = np.unique(mask[mask>0])
 
