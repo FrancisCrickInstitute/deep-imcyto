@@ -101,7 +101,14 @@ workflow DILATION_WF {
                 NoCompCP(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe, plugins)
             }
             else if (params.preprocess_method == 'hotpixel') {
-                NoCompHotPixel(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
+                if params.generate_metadata == true {
+                    metadata = metadata.map { it[-1] }.first()
+                    metadata.view()
+                    NoCompHotPixel(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
+                }
+                else {
+                    NoCompHotPixel(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
+                }
             }
             else if (params.preprocess_method == 'none') {
                 NoCompNoPreprocess(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights)
