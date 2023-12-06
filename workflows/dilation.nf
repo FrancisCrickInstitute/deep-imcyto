@@ -40,7 +40,7 @@ workflow DILATION_WF {
             ch_counterstain_dir = group_fullstack(IMCTOOLS_GEN.out.ch_counterstain_dir)
             ch_full_stack_dir = group_fullstack(IMCTOOLS_GEN.out.ch_full_stack_dir)
             ch_counterstain_dir = group_fullstack(IMCTOOLS_GEN.out.ch_counterstain_dir)
-            metadata = GENERATE_METADATA.out.mcd_metadata_tuple
+            metadata = GENERATE_METADATA.out.mcd_metadata_tuple.map { it[-1] }.first()
         }
         else {
             // Run IMC tools on raw files:
@@ -69,29 +69,14 @@ workflow DILATION_WF {
                 // PREPROCESS_FULL_STACK(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe, plugins) // Preprocess channels with a specified cppipe:
             }
             else if (params.preprocess_method == 'hotpixel') {
-                if params.generate_metadata == true {
-                    metadata = metadata.map { it[-1] }.first()
-                    metadata.view()
                     CompHotPixel(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
                 }
-                else {
-                    CompHotPixel(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
-                }
-            }
             else if (params.preprocess_method == 'none') {
-                if params.generate_metadata == true {
-                    metadata = metadata.map { it[-1] }.first()
-                    metadata.view()
                     CompNoPreprocess(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
                 }
-                else {
-                    CompNoPreprocess(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
-                }
-            }
-            else { exit 1, "IMC channel preprocessing method not recognised!" }
             
+            else { exit 1, "IMC channel preprocessing method not recognised!" }
         }
-
         else {
 
             /*
@@ -101,19 +86,11 @@ workflow DILATION_WF {
                 NoCompCP(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe, plugins)
             }
             else if (params.preprocess_method == 'hotpixel') {
-                if params.generate_metadata == true {
-                    metadata = metadata.map { it[-1] }.first()
-                    metadata.view()
                     NoCompHotPixel(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
                 }
-                else {
-                    NoCompHotPixel(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
-                }
-            }
             else if (params.preprocess_method == 'none') {
                 NoCompNoPreprocess(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights)
             }
             else { exit 1, "IMC channel preprocessing method not recognised!" }
         }
-
 }
