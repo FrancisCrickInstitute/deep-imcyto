@@ -28,24 +28,19 @@ workflow DILATION_WF {
     
 
     main:
-        
-        // if (params.generate_metadata == true) {
-        //     GENERATE_METADATA(mcd)
-        //     metadata = GENERATE_METADATA.out.metadata.first()
-        // }
 
         if (params.generate_metadata == true) {
             GENERATE_METADATA(mcd)
             imctools_input = GENERATE_METADATA.out.mcd_metadata_tuple
-            imctools_input.view()
             IMCTOOLS_GEN(imctools_input)
             // Group full stack files by sample and roi_id
             ch_full_stack_mapped_tiff = group_channel(IMCTOOLS_GEN.out.ch_full_stack_tiff)
             ch_dna_stack = group_channel(IMCTOOLS_GEN.out.ch_dna_stack_tiff)
-            ch_dna_stack = ch_dna_stack.flatten().collate( 4 ).view()
+            ch_dna_stack = ch_dna_stack.flatten().collate( 4 )
             ch_counterstain_dir = group_fullstack(IMCTOOLS_GEN.out.ch_counterstain_dir)
             ch_full_stack_dir = group_fullstack(IMCTOOLS_GEN.out.ch_full_stack_dir)
             ch_counterstain_dir = group_fullstack(IMCTOOLS_GEN.out.ch_counterstain_dir)
+            metadata = GENERATE_METADATA.out.mcd_metadata_tuple
         }
         else {
             // Run IMC tools on raw files:
@@ -54,22 +49,12 @@ workflow DILATION_WF {
             // Group full stack files by sample and roi_id
             ch_full_stack_mapped_tiff = group_channel(IMCTOOLS.out.ch_full_stack_tiff)
             ch_dna_stack = group_channel(IMCTOOLS.out.ch_dna_stack_tiff)
-            ch_dna_stack = ch_dna_stack.flatten().collate( 4 ).view()
+            ch_dna_stack = ch_dna_stack.flatten().collate( 4 )
             ch_counterstain_dir = group_fullstack(IMCTOOLS.out.ch_counterstain_dir)
             ch_full_stack_dir = group_fullstack(IMCTOOLS.out.ch_full_stack_dir)
             ch_counterstain_dir = group_fullstack(IMCTOOLS.out.ch_counterstain_dir)
 
         }
-
-        //Run IMCTOOLS:
-        // IMCTOOLS(mcd, metadata)
-
-        // Group full stack files by sample and roi_id:
-        // ch_full_stack_mapped_tiff = group_channel(IMCTOOLS.out.ch_full_stack_tiff)
-        // ch_dna_stack = group_channel(IMCTOOLS.out.ch_dna_stack_tiff)
-        // ch_dna_stack = ch_dna_stack.flatten().collate( 4 )
-        // ch_full_stack_dir = group_fullstack(IMCTOOLS.out.ch_full_stack_dir)
-        // ch_counterstain_dir = group_fullstack(IMCTOOLS.out.ch_counterstain_dir)
 
         if (params.compensation_tiff != false) {
 
@@ -77,29 +62,31 @@ workflow DILATION_WF {
             * Perform spillover correction:
             */
 
-            // Correct spillover of tiff channels specified in metadata file:
-            CORRECT_SPILLOVER(ch_full_stack_dir, metadata)
-            
-            // Group full stack files by sample and roi_id:
-            ch_full_stack_mapped_tiff = group_channel(CORRECT_SPILLOVER.out.ch_spillover_comp_tiff)
-
             // preprocess compensated channels with desired method:
             if (params.preprocess_method == 'cellprofiler') {
-
-                // Preprocess channels with a specified cppipe:
-                PREPROCESS_FULL_STACK(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe, plugins)
+                { exit 1, "Cellprofiler preprocessing method not implemented. Please use 'hotpixel' or 'none'." }
+                // CompCP
+                // PREPROCESS_FULL_STACK(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe, plugins) // Preprocess channels with a specified cppipe:
             }
-
             else if (params.preprocess_method == 'hotpixel') {
-
-                CompHotPixel(CORRECT_SPILLOVER.out.ch_comp_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
-
+                if params.generate_metadata == true {
+                    metadata = metadata.map { it[-1] }.first()
+                    metadata.view()
+                    CompHotPixel(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
+                }
+                else {
+                    CompHotPixel(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
+                }
             }
-
             else if (params.preprocess_method == 'none') {
-                
-                CompNoPreprocess(CORRECT_SPILLOVER.out.ch_comp_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
-
+                if params.generate_metadata == true {
+                    metadata = metadata.map { it[-1] }.first()
+                    metadata.view()
+                    CompNoPreprocess(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
+                }
+                else {
+                    CompNoPreprocess(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
+                }
             }
             else { exit 1, "IMC channel preprocessing method not recognised!" }
             
@@ -108,29 +95,18 @@ workflow DILATION_WF {
         else {
 
             /*
-            * Do not perform spillover correction:
+            * Do not perform spillover correction and preprocess uncompensated channels with desired method:
             */
-
-            // preprocess uncompensated channels with desired method:
             if (params.preprocess_method == 'cellprofiler') {
-
                 NoCompCP(ch_full_stack_mapped_tiff, compensation.collect().ifEmpty([]), cppipe, plugins)
-
             }
-
             else if (params.preprocess_method == 'hotpixel') {
-
                 NoCompHotPixel(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights, metadata)
-
             }
             else if (params.preprocess_method == 'none') {
-
                 NoCompNoPreprocess(ch_full_stack_dir, ch_dna_stack, ch_counterstain_dir, weights)
-                
             }
-
             else { exit 1, "IMC channel preprocessing method not recognised!" }
-        
         }
 
 }

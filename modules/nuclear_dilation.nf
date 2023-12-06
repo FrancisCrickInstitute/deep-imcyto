@@ -1,7 +1,7 @@
 process NUCLEAR_DILATION {
 
     tag "${name}.${roi}"
-    label 'deep_imcyto_GPU'
+    label 'deep_imcyto_CPU'
 
     publishDir "${params.outdir}/deep-imcyto/${params.release}/simple_segmentation/${name}/${roi}", mode: params.publish_dir_mode
 
@@ -20,7 +20,7 @@ process NUCLEAR_DILATION {
 process DILATION_MEASURE {
 
     tag "${name}.${roi}"
-    label 'deep_imcyto_GPU'
+    label 'deep_imcyto_CPU'
     
     publishDir "${params.outdir}/deep-imcyto/${params.release}/simple_segmentation/${name}/${roi}", mode: params.publish_dir_mode
     
@@ -43,7 +43,7 @@ process OVERLAYS {
     * Make a pseudo-he image for each mcd file.
     */
     tag "${name}.${roi}"
-    label 'deep_imcyto_local'
+    label 'deep_imcyto_CPU'
 
     publishDir "${params.outdir}/deep-imcyto/${params.release}/simple_segmentation/${name}/${roi}", mode: params.publish_dir_mode
 

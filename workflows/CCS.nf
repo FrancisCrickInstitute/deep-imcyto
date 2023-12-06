@@ -113,5 +113,4 @@ workflow CONSENSUS_WF_MCCS_PP {
         CONSENSUS_CELL_SEGMENTATION_MCCS_PP(ch_seg_stack, cppipe_consensus_cell_seg, plugins)
 
         
-  
 }

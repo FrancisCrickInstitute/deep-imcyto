@@ -147,7 +147,7 @@ process CORRECT_SPILLOVER{
                                         --outdir './spillover_compensated'\
                                         --extension '.tiff'\
                                         --spillover_matrix ${params.compensation_tiff}\
-                                        --metadata ${params.metadata}\
+                                        --metadata $metadata\
                                         --method ${params.compensation_method}
         """
 

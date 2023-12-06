@@ -139,15 +139,19 @@ workflow NoCompCP {
 workflow CompHotPixel {
 
     take:
-        ch_comp_stack_dir
+        ch_full_stack_dir
         ch_dna_stack
         ch_counterstain_dir
         weights
         metadata
 
     main:
+
+        // Correct spillover of tiff channels specified in metadata file:
+        CORRECT_SPILLOVER(ch_full_stack_dir, metadata)
+
         // Remove hot pixels:
-        REMOVE_HOTPIXELS(ch_comp_stack_dir, metadata)
+        REMOVE_HOTPIXELS(CORRECT_SPILLOVER.out.ch_comp_stack_dir, metadata)
 
         // Preprocess nuclear channels for nuclei specifically:
         NUCLEAR_PREPROCESS(ch_dna_stack)
@@ -191,13 +195,18 @@ workflow CompHotPixel {
 workflow CompNoPreprocess {
 
     take:
-        ch_comp_stack_dir
+        ch_full_stack_dir
         ch_dna_stack
         ch_counterstain_dir
         weights
         metadata
 
     main:
+
+        // Correct spillover of tiff channels specified in metadata file:
+        CORRECT_SPILLOVER(ch_full_stack_dir, metadata)
+
+        ch_comp_stack_dir = CORRECT_SPILLOVER.out.ch_comp_stack_dir
 
         // Preprocess nuclear channels for nuclei specifically:
         NUCLEAR_PREPROCESS(ch_dna_stack)
